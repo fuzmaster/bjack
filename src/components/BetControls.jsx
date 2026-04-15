@@ -1,4 +1,5 @@
 import { Minus, Plus } from "lucide-react";
+import { formatCurrency } from "../utils/formatters";
 import UIButton from "./UIButton";
 import Chip from "./Chip";
 
@@ -9,37 +10,45 @@ export default function BetControls({
   onSelectChip,
   onIncreaseBet,
   onDecreaseBet,
+  disabled = false,
 }) {
   return (
-    <div className="border-4 border-black bg-[#e6e6e6] p-4 text-black shadow-[8px_8px_0_#000] sm:p-5">
-      <div className="mb-4 text-xs font-black uppercase tracking-[0.08em] sm:mb-5">Bet Controls</div>
+    <div
+      className={`control-cluster p-1 text-[var(--panel-text)] transition-opacity duration-200 sm:p-2 ${
+        disabled ? "pointer-events-none opacity-55" : ""
+      }`}
+      aria-disabled={disabled || undefined}
+    >
+      <div className="mb-3 text-sm font-black uppercase tracking-[0.07em] sm:mb-4">Bet Controls</div>
 
-      <div className="mb-4 grid grid-cols-[72px_1fr_72px] items-center gap-3 sm:mb-5 sm:grid-cols-[64px_1fr_64px]">
+      <div className="mb-3 grid grid-cols-[56px_1fr_56px] items-center gap-2 sm:mb-4 sm:grid-cols-[60px_1fr_60px] sm:gap-2.5">
         <UIButton
           onClick={onDecreaseBet}
-          className="h-16 w-16 bg-white p-0 text-black shadow-[4px_4px_0_#000] sm:h-14 sm:w-14"
+          className="h-12 w-12 bg-[var(--bet-adjust-bg)] p-0 text-[var(--panel-text)] shadow-[4px_4px_0_#000] sm:h-14 sm:w-14"
           aria-label="Decrease bet"
+          disabled={disabled}
         >
-          <Minus className="h-6 w-6 sm:h-4 sm:w-4" />
+          <Minus className="h-5 w-5" />
         </UIButton>
 
-        <div className="border-4 border-black bg-[#c8c8c8] px-4 py-3 text-center shadow-[4px_4px_0_#000] sm:py-4">
-          <div className="text-xs font-black uppercase tracking-[0.08em]">Current Bet</div>
-          <div className="display-heavy text-6xl font-black leading-none sm:text-5xl">
-            ${bet}
+        <div className="surface-readout px-3 py-2 text-center sm:py-2.5">
+          <div className="text-sm font-black uppercase tracking-[0.07em]">Current Bet</div>
+          <div className="display-heavy numeric-tabular font-black leading-none" style={{ fontSize: "clamp(1.75rem, 8vw, 3rem)" }}>
+            {formatCurrency(bet)}
           </div>
         </div>
 
         <UIButton
           onClick={onIncreaseBet}
-          className="h-16 w-16 bg-white p-0 text-black shadow-[4px_4px_0_#000] sm:h-14 sm:w-14"
+          className="h-12 w-12 bg-[var(--bet-adjust-bg)] p-0 text-[var(--panel-text)] shadow-[4px_4px_0_#000] sm:h-14 sm:w-14"
           aria-label="Increase bet"
+          disabled={disabled}
         >
-          <Plus className="h-6 w-6 sm:h-4 sm:w-4" />
+          <Plus className="h-5 w-5" />
         </UIButton>
       </div>
 
-      <div className="flex flex-wrap justify-center gap-3 pt-1">
+      <div className="flex flex-wrap justify-center gap-2.5 pt-0.5">
         {chipValues.map((value) => (
           <Chip
             key={value}

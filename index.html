@@ -4,7 +4,16 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>backjack-test</title>
+    <title>Velvet 21</title>
+    <script>
+      try {
+        const valid = ["modern","classic","royal","cherry","gold"];
+        const stored = localStorage.getItem("blackjack-theme");
+        document.documentElement.dataset.theme = valid.includes(stored) ? stored : "modern";
+      } catch (e) {
+        document.documentElement.dataset.theme = "modern";
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>

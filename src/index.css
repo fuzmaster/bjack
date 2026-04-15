@@ -1,6 +1,99 @@
 @import url("https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Grotesk:wght@400;600;700&display=swap");
 @import "tailwindcss";
 
+:root,
+:root[data-theme="modern"] {
+  --theme-hue: 208;
+  --theme-preset-hue: 208;
+  --theme-accent: hsl(var(--theme-hue) 68% 50%);
+  --page-bg: hsl(var(--theme-hue) 26% 8%);
+  --page-text: hsl(var(--theme-hue) 18% 95%);
+  --page-gradient:
+    radial-gradient(120% 92% at 50% -12%, hsl(var(--theme-hue) 42% 28% / 0.26), transparent 58%),
+    radial-gradient(80% 64% at 10% 22%, hsl(var(--theme-hue) 50% 22% / 0.16), transparent 64%),
+    linear-gradient(
+      to bottom,
+      hsl(var(--theme-hue) 28% 13% / 0.99) 0%,
+      hsl(var(--theme-hue) 30% 11% / 0.97) 42%,
+      hsl(var(--theme-hue) 25% 8% / 0.98) 74%,
+      hsl(var(--theme-hue) 24% 6% / 1) 100%
+    );
+  --ambient-ring-strong: hsl(var(--theme-hue) 32% 90% / 0.11);
+  --ambient-ring-soft: hsl(var(--theme-hue) 28% 90% / 0.08);
+  --ambient-floor-gradient: linear-gradient(
+    to top,
+    hsl(var(--theme-hue) 24% 6% / 0.66) 0%,
+    hsl(var(--theme-hue) 28% 18% / 0.34) 42%,
+    transparent 100%
+  );
+  --noise-opacity: 0.045;
+  --table-bg: hsl(var(--theme-hue) 42% 17% / 0.86);
+  --hand-zone-bg: hsl(var(--theme-hue) 34% 14% / 0.92);
+  --hand-title: hsl(var(--theme-hue) 24% 78%);
+  --hand-total: hsl(var(--theme-hue) 20% 96%);
+  --hand-empty: hsl(var(--theme-hue) 24% 92% / 0.78);
+  --panel-bg: hsl(var(--theme-hue) 20% 84%);
+  --panel-text: hsl(var(--theme-hue) 18% 11%);
+  --panel-muted: hsl(var(--theme-hue) 16% 12% / 0.84);
+  --top-pill-bg: hsl(var(--theme-hue) 14% 97%);
+  --top-pill-alt-bg: hsl(var(--theme-hue) 24% 72%);
+  --status-panel-bg: hsl(var(--theme-hue) 20% 78%);
+  --status-panel-text: hsl(var(--theme-hue) 18% 10%);
+  --status-slab-bg: hsl(var(--theme-hue) 15% 95%);
+  --status-slab-text: hsl(var(--theme-hue) 18% 10%);
+  --status-accent: hsl(var(--theme-hue) 52% 30%);
+  --status-win-glow: hsl(calc(var(--theme-hue) + 36) 86% 58% / 0.42);
+  --stat-icon-bg: hsl(var(--theme-hue) 22% 70%);
+  --bet-adjust-bg: hsl(var(--theme-hue) 18% 96%);
+  --bet-display-bg: hsl(var(--theme-hue) 24% 75%);
+  --action-mobile-bg: hsl(var(--theme-hue) 26% 6% / 0.96);
+  --action-desktop-bg: hsl(var(--theme-hue) 19% 82%);
+  --button-text: hsl(var(--theme-hue) 18% 9%);
+  --button-deal-bg: hsl(var(--theme-hue) 26% 92%);
+  --button-next-bg: hsl(var(--theme-hue) 28% 72%);
+  --button-hit-bg: hsl(var(--theme-hue) 60% 63%);
+  --button-stand-bg: hsl(var(--theme-hue) 35% 60%);
+  --reset-button-bg: hsl(var(--theme-hue) 26% 20%);
+  --reset-button-text: hsl(var(--theme-hue) 30% 95%);
+  --theme-label-bg: hsl(var(--theme-hue) 14% 96%);
+  --theme-label-text: hsl(var(--theme-hue) 20% 12%);
+  --theme-toggle-frame: hsl(var(--theme-hue) 21% 74%);
+  --theme-toggle-bg: hsl(var(--theme-hue) 17% 93%);
+  --theme-toggle-text: hsl(var(--theme-hue) 20% 12%);
+  --theme-toggle-active-bg: hsl(var(--theme-hue) 54% 28%);
+  --theme-toggle-active-text: hsl(var(--theme-hue) 30% 97%);
+  --chip-bg: hsl(var(--theme-hue) 34% 55%);
+  --chip-active-bg: hsl(var(--theme-hue) 16% 95%);
+  --chip-text: hsl(var(--theme-hue) 20% 10%);
+  --card-back-bg: hsl(var(--theme-hue) 52% 58%);
+  --card-back-inner-bg: hsl(var(--theme-hue) 64% 92%);
+  --card-back-text: hsl(var(--theme-hue) 20% 10%);
+  --card-front-bg: hsl(var(--theme-hue) 12% 98%);
+  --card-front-text: hsl(var(--theme-hue) 20% 9%);
+  --button-disabled-bg: hsl(var(--theme-hue) 10% 52%);
+  --button-disabled-text: hsl(var(--theme-hue) 10% 24%);
+  --button-disabled-border: hsl(var(--theme-hue) 16% 12%);
+  --button-disabled-shadow: #000000;
+
+  /* ── Fluid card sizing ──────────────────────────────────────────────────── */
+  /* Cards scale with viewport width: min 80px wide, max 144px wide.          */
+  /* Height is always card-w × 1.4 (standard playing card ratio).             */
+  --card-w: clamp(80px, 22vw, 144px);
+  --card-h: calc(var(--card-w) * 1.4);
+  /* Rank text: 11–18px */
+  --card-rank-size: clamp(0.7rem, 2.5vw, 1.125rem);
+  /* Small pips (corners): 10–16px */
+  --card-pip-sm: clamp(10px, 2.4vw, 16px);
+  /* Center pip: 40–64px */
+  --card-pip-lg: clamp(40px, 11vw, 64px);
+  /* Face-card motif box: uses proportion of card width */
+  --facemark-size: calc(var(--card-w) * 0.57);
+  /* Center pip inside face motif */
+  --facemark-center-pip: clamp(18px, 5vw, 28px);
+  /* Accent color used in difficulty buttons */
+  --accent: hsl(var(--theme-hue) 60% 42%);
+}
+
 html,
 body,
 #root {
@@ -11,15 +104,23 @@ body,
 
 body {
   font-family: "Space Grotesk", "Bahnschrift", "Segoe UI", sans-serif;
-  background: #09090b;
-  color: #f5f5f5;
-  line-height: 1.35;
+  background: var(--page-bg);
+  color: var(--page-text);
+  line-height: 1.45;
   text-rendering: optimizeLegibility;
+  touch-action: manipulation;
+  transition: background-color 180ms ease, color 180ms ease;
 }
 
 button {
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
+}
+
+button:focus-visible,
+[role="button"]:focus-visible {
+  outline: 3px solid hsl(var(--theme-hue) 92% 72%);
+  outline-offset: 2px;
 }
 
 a,
@@ -43,5 +144,142 @@ h3,
     transparent 1px,
     transparent 4px
   );
-  opacity: 0.06;
+  opacity: var(--noise-opacity);
+}
+
+.app-shell {
+  transition: background-color 180ms ease, color 180ms ease;
+}
+
+.numeric-tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+.table-surface-shell {
+  position: relative;
+  border: 1px solid hsl(var(--theme-hue) 28% 55% / 0.14);
+  background:
+    radial-gradient(circle at top center, hsl(var(--theme-hue) 54% 28% / 0.12), transparent 45%),
+    linear-gradient(to bottom, hsl(var(--theme-hue) 34% 15% / 0.16), transparent 32%);
+  box-shadow:
+    inset 0 1px 0 hsl(var(--theme-hue) 20% 96% / 0.08),
+    inset 0 -10px 28px hsl(var(--theme-hue) 30% 6% / 0.2);
+}
+
+.table-seam {
+  height: 1px;
+  margin-inline: auto;
+  width: min(100%, 42rem);
+  background: linear-gradient(
+    to right,
+    transparent,
+    hsl(var(--theme-hue) 24% 85% / 0.1),
+    hsl(var(--theme-hue) 22% 8% / 0.4),
+    hsl(var(--theme-hue) 24% 85% / 0.1),
+    transparent
+  );
+  box-shadow: 0 6px 14px hsl(var(--theme-hue) 20% 4% / 0.18);
+}
+
+.surface-pill {
+  display: inline-flex;
+  min-height: 3rem;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.1rem;
+  padding: 0.45rem 0.75rem;
+  border: 1px solid hsl(var(--theme-hue) 24% 90% / 0.14);
+  background: hsl(var(--theme-hue) 20% 84% / 0.9);
+  color: hsl(var(--theme-hue) 18% 10%);
+  box-shadow: inset 0 1px 0 hsl(var(--theme-hue) 14% 100% / 0.35);
+}
+
+.surface-pill-accent {
+  background: hsl(var(--theme-hue) 18% 93% / 0.95);
+}
+
+.control-rail {
+  padding: 0.65rem;
+  border-top: 1px solid hsl(var(--theme-hue) 22% 95% / 0.12);
+  background:
+    linear-gradient(to bottom, hsl(var(--theme-hue) 34% 16% / 0.18), transparent 38%),
+    linear-gradient(to top, hsl(var(--theme-hue) 25% 6% / 0.94), hsl(var(--theme-hue) 28% 8% / 0.9));
+  box-shadow:
+    inset 0 10px 20px hsl(var(--theme-hue) 20% 2% / 0.24),
+    0 -8px 20px hsl(var(--theme-hue) 18% 2% / 0.14);
+}
+
+.control-cluster {
+  background: transparent;
+}
+
+.surface-readout {
+  border: 1px solid hsl(var(--theme-hue) 22% 95% / 0.14);
+  background: hsl(var(--theme-hue) 18% 96% / 0.92);
+  box-shadow:
+    inset 0 1px 0 hsl(var(--theme-hue) 20% 100% / 0.42),
+    0 8px 18px hsl(var(--theme-hue) 18% 4% / 0.12);
+}
+
+.topbar-shell {
+  border: 1px solid hsl(var(--theme-hue) 24% 90% / 0.12);
+  background: hsl(var(--theme-hue) 18% 86% / 0.88);
+  box-shadow:
+    inset 0 1px 0 hsl(var(--theme-hue) 14% 100% / 0.35),
+    0 10px 28px hsl(var(--theme-hue) 18% 5% / 0.08);
+}
+
+.surface-chip {
+  border: 1px solid hsl(var(--theme-hue) 20% 18% / 0.15);
+  background: hsl(var(--theme-hue) 14% 96% / 0.88);
+  box-shadow: inset 0 1px 0 hsl(var(--theme-hue) 20% 100% / 0.32);
+}
+
+.surface-chip-alt {
+  background: hsl(var(--theme-hue) 24% 72% / 0.9);
+}
+
+.surface-stat {
+  border: 1px solid hsl(var(--theme-hue) 20% 18% / 0.12);
+  background: hsl(var(--theme-hue) 18% 87% / 0.82);
+  box-shadow: inset 0 1px 0 hsl(var(--theme-hue) 14% 100% / 0.28);
+}
+
+.surface-stat-icon {
+  border: 1px solid hsl(var(--theme-hue) 18% 18% / 0.14);
+  background: hsl(var(--theme-hue) 22% 70% / 0.84);
+}
+
+.ui-button:disabled {
+  border-color: var(--button-disabled-border);
+  background: var(--button-disabled-bg);
+  color: var(--button-disabled-text);
+  box-shadow: 2px 2px 0 var(--button-disabled-shadow);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .neo-noise-overlay {
+    opacity: calc(var(--noise-opacity) * 0.6);
+  }
+}
+
+/* Hover effects only apply on devices that support true hover (not touch screens). */
+/* This prevents buttons from appearing visually "stuck" on iOS/Android after tap. */
+@media (hover: hover) {
+  .ui-button:not(:disabled):hover {
+    filter: brightness(1.05);
+  }
+
+  .chip-button:not([data-active]):hover {
+    transform: translateY(-2px);
+  }
 }

@@ -3,10 +3,11 @@ export default function Chip({ value, active, onClick }) {
     <button
       type="button"
       onClick={onClick}
-      className={`relative h-14 w-14 rounded-full border-4 border-black font-black text-black transition ${
-        active ? "-translate-y-1 shadow-[0_8px_0_#000]" : "shadow-[0_4px_0_#000] hover:-translate-y-0.5"
+      data-active={active || undefined}
+      className={`chip-button relative h-14 w-14 rounded-full border-4 border-black font-black text-[var(--chip-text)] transition ${
+        active ? "-translate-y-1 shadow-[0_8px_0_#000]" : "shadow-[0_4px_0_#000]"
       }`}
-      style={{ background: active ? "#f2f2f2" : "#8f8f8f" }}
+      style={{ background: active ? "var(--chip-active-bg)" : "var(--chip-bg)" }}
     >
       <span className="text-sm">${value}</span>
     </button>

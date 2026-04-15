@@ -1,28 +1,41 @@
-import { useCallback, useEffect, useMemo, useReducer, useRef } from "react";
-import { motion } from "framer-motion";
+import { useCallback, useEffect, useReducer, useRef, useState } from "react";
+import { motion, useReducedMotion } from "framer-motion";
+import confetti from "canvas-confetti";
 import TopBar from "./components/TopBar";
 import BetControls from "./components/BetControls";
 import ActionPanel from "./components/ActionPanel";
 import HandZone from "./components/HandZone";
-import { CHIP_VALUES, createDeck, handValue, resolveRound } from "./game/blackjack";
-import { gameReducer, initialGameState } from "./game/reducer";
+import { useTheme } from "./context/useTheme";
+import { CHIP_VALUES, createDeck, DIFFICULTY_PRESETS, getStreakMultiplier, handValue, RESHUFFLE_THRESHOLD, resolveRound } from "./game/blackjack";
+import { createInitialGameState, gameReducer, initialGameState } from "./game/reducer";
 import { useGameAudio } from "./hooks/useGameAudio";
+import { getStoredBankroll, setStoredBankroll, getStoredDifficulty, setStoredDifficulty } from "./utils/storage";
+import { formatCurrency } from "./utils/formatters";
 
 const MotionDiv = motion.div;
 
 export default function App() {
-  const [state, dispatch] = useReducer(gameReducer, initialGameState);
-  const { play } = useGameAudio();
+  const [state, dispatch] = useReducer(
+    gameReducer,
+    initialGameState,
+    (baseState) => createInitialGameState(baseState.deck, baseState.roundId, getStoredBankroll() ?? baseState.bankroll),
+  );
+  const { play, unlockAudio } = useGameAudio();
+  const { theme, setTheme, themeOptions } = useTheme();
+  const [difficulty, setDifficulty] = useState(() => getStoredDifficulty());
   const roundTokenRef = useRef(0);
   const dealerStepTimeoutRef = useRef(null);
+  const previousGameStateRef = useRef(state.gameState);
+  const previousRoundStateRef = useRef(state.gameState);
+  const previousBankrollRef = useRef(state.bankroll);
+  const reduceMotion = useReducedMotion();
 
-  const playerTotal = useMemo(() => handValue(state.playerHand), [state.playerHand]);
-  const dealerVisibleHand = useMemo(
-    () => (state.dealerRevealed ? state.dealerHand : state.dealerHand.slice(0, 1)),
-    [state.dealerHand, state.dealerRevealed]
-  );
-  const dealerShownTotal = useMemo(() => handValue(dealerVisibleHand), [dealerVisibleHand]);
-  const dealerTotal = useMemo(() => handValue(state.dealerHand), [state.dealerHand]);
+  const playerTotal = handValue(state.playerHand);
+  const dealerVisibleHand = state.dealerRevealed ? state.dealerHand : state.dealerHand.slice(0, 1);
+  const dealerShownTotal = handValue(dealerVisibleHand);
+  const dealerTotal = handValue(state.dealerHand);
+
+  const isGameActive = state.gameState === "player-turn" || state.gameState === "dealer-turn";
 
   const endRound = useCallback((resultMessage, delta) => {
     dispatch({
@@ -41,43 +54,34 @@ export default function App() {
   const beginDealerTurn = useCallback(() => {
     if (state.gameState !== "player-turn") return;
     dispatch({ type: "DEALER_REVEAL" });
-    play("flip", 0.24);
-  }, [play, state.gameState]);
+  }, [state.gameState]);
 
   const startNewRound = useCallback(() => {
     if (state.bankroll <= 0 || state.bet > state.bankroll) return;
     if (state.gameState === "player-turn" || state.gameState === "dealer-turn") return;
 
+    unlockAudio();
     roundTokenRef.current += 1;
     const roundId = roundTokenRef.current;
-
-    const deck = createDeck(roundId);
-    const playerHand = [deck[0], deck[2]];
-    const dealerHand = [deck[1], deck[3]];
-    const nextDeck = deck.slice(4);
+    const needsNewDeck = state.deck.length < RESHUFFLE_THRESHOLD || state.deck.length < 4;
+    const newDeck = needsNewDeck ? createDeck(roundId) : undefined;
 
     dispatch({
       type: "DEAL_ROUND",
       payload: {
-        deck: nextDeck,
-        playerHand,
-        dealerHand,
         roundId,
+        newDeck,
       },
     });
 
     play("deal", 0.34);
-
-    if (handValue(playerHand) === 21) {
-      dispatch({ type: "DEALER_REVEAL" });
-      play("flip", 0.24);
-    }
-  }, [play, state.bankroll, state.bet, state.gameState]);
+  }, [play, state.bankroll, state.bet, state.deck, state.gameState, unlockAudio]);
 
   const hit = useCallback(() => {
     if (state.gameState !== "player-turn") return;
     if (state.deck.length === 0) return;
 
+    unlockAudio();
     const card = state.deck[0];
     const nextDeck = state.deck.slice(1);
     const nextPlayerHand = [...state.playerHand, card];
@@ -98,49 +102,91 @@ export default function App() {
     } else if (nextTotal === 21) {
       beginDealerTurn();
     }
-  }, [beginDealerTurn, endRound, play, state.bet, state.deck, state.gameState, state.playerHand]);
+  }, [beginDealerTurn, endRound, play, state.bet, state.deck, state.gameState, state.playerHand, unlockAudio]);
 
   const stand = useCallback(() => {
     beginDealerTurn();
   }, [beginDealerTurn]);
 
+  const doubleDown = useCallback(() => {
+    if (state.gameState !== "player-turn") return;
+    if (state.playerHand.length !== 2) return;
+    if (state.bankroll < state.bet * 2) return;
+    if (state.deck.length === 0) return;
+
+    unlockAudio();
+    const card = state.deck[0];
+    const nextDeck = state.deck.slice(1);
+    const nextPlayerHand = [...state.playerHand, card];
+    const newBet = state.bet * 2;
+
+    dispatch({
+      type: "DOUBLE_DOWN",
+      payload: { card, nextDeck, newBet },
+    });
+
+    play("deal", 0.3);
+
+    const nextTotal = handValue(nextPlayerHand);
+    if (nextTotal > 21) {
+      endRound("BUST • DEALER WINS", -newBet);
+    } else {
+      beginDealerTurn();
+    }
+  }, [beginDealerTurn, endRound, play, state.bankroll, state.bet, state.deck, state.gameState, state.playerHand, unlockAudio]);
+
   const resetGame = useCallback(() => {
+    unlockAudio();
     play("button", 0.22);
     roundTokenRef.current += 1;
     dispatch({
       type: "RESET_GAME",
       payload: {
         roundId: roundTokenRef.current,
+        newDeck: createDeck(roundTokenRef.current),
+        bankroll: DIFFICULTY_PRESETS[difficulty].bankroll,
       },
     });
-  }, [play]);
+  }, [difficulty, play, unlockAudio]);
 
   const nextRound = useCallback(() => {
+    unlockAudio();
     play("button", 0.22);
     if (state.bankroll <= 0) {
       resetGame();
       return;
     }
     startNewRound();
-  }, [play, resetGame, startNewRound, state.bankroll]);
+  }, [play, resetGame, startNewRound, state.bankroll, unlockAudio]);
 
   const increaseBet = useCallback(() => {
+    unlockAudio();
     play("chip", 0.2);
     dispatch({ type: "INCREASE_BET" });
-  }, [play]);
+  }, [play, unlockAudio]);
 
   const decreaseBet = useCallback(() => {
+    unlockAudio();
     play("chip", 0.2);
     dispatch({ type: "DECREASE_BET" });
-  }, [play]);
+  }, [play, unlockAudio]);
 
   const selectChip = useCallback((value) => {
+    unlockAudio();
     play("chip", 0.2);
     dispatch({
       type: "SET_SELECTED_CHIP",
       payload: value,
     });
-  }, [play]);
+  }, [play, unlockAudio]);
+
+  useEffect(() => {
+    setStoredBankroll(state.bankroll);
+  }, [state.bankroll]);
+
+  useEffect(() => {
+    setStoredDifficulty(difficulty);
+  }, [difficulty]);
 
   useEffect(() => {
     return () => {
@@ -152,6 +198,55 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    if (previousGameStateRef.current !== "dealer-turn" && state.gameState === "dealer-turn") {
+      play("flip", 0.24);
+    }
+
+    previousGameStateRef.current = state.gameState;
+  }, [play, state.gameState]);
+
+  useEffect(() => {
+    const wasRoundOver = previousRoundStateRef.current === "round-over";
+    const isRoundOver = state.gameState === "round-over";
+    const bankrollDelta = state.bankroll - previousBankrollRef.current;
+
+    if (!reduceMotion && !wasRoundOver && isRoundOver && bankrollDelta > 0) {
+      const naturalBlackjackWin = state.message.includes("BLACKJACK");
+
+      confetti({
+        particleCount: naturalBlackjackWin ? 120 : 68,
+        spread: naturalBlackjackWin ? 86 : 56,
+        scalar: naturalBlackjackWin ? 1.08 : 0.92,
+        startVelocity: naturalBlackjackWin ? 46 : 32,
+        origin: { y: 0.62 },
+        zIndex: 1200,
+      });
+
+      if (naturalBlackjackWin) {
+        confetti({
+          particleCount: 44,
+          spread: 78,
+          scalar: 0.84,
+          startVelocity: 38,
+          origin: { x: 0.2, y: 0.58 },
+          zIndex: 1200,
+        });
+        confetti({
+          particleCount: 44,
+          spread: 78,
+          scalar: 0.84,
+          startVelocity: 38,
+          origin: { x: 0.8, y: 0.58 },
+          zIndex: 1200,
+        });
+      }
+    }
+
+    previousRoundStateRef.current = state.gameState;
+    previousBankrollRef.current = state.bankroll;
+  }, [reduceMotion, state.bankroll, state.bet, state.gameState, state.message]);
+
+  useEffect(() => {
     if (state.gameState !== "dealer-turn") return;
     if (state.roundId !== roundTokenRef.current) return;
 
@@ -159,22 +254,22 @@ export default function App() {
 
     if (dealerScore >= 17) {
       try {
-        const { message, delta } = resolveRound(playerTotal, dealerScore, state.bet);
+        const { message, delta } = resolveRound(playerTotal, dealerScore, state.bet, state.playerHand.length);
         endRound(message, delta);
       } catch (error) {
         console.error("Failed to resolve dealer round", error);
-        endRound("ROUND ERROR • PRESS RESET", 0);
+        endRound("ERROR — RESET GAME", 0);
       }
       return;
     }
 
     if (state.deck.length === 0) {
       try {
-        const { message, delta } = resolveRound(playerTotal, dealerScore, state.bet);
+        const { message, delta } = resolveRound(playerTotal, dealerScore, state.bet, state.playerHand.length);
         endRound(message, delta);
       } catch (error) {
         console.error("Failed to settle empty-deck round", error);
-        endRound("ROUND ERROR • PRESS RESET", 0);
+        endRound("ERROR — RESET GAME", 0);
       }
       return;
     }
@@ -196,7 +291,7 @@ export default function App() {
         play("deal", 0.28);
       } catch (error) {
         console.error("Dealer draw step failed", error);
-        endRound("ROUND ERROR • PRESS RESET", 0);
+        endRound("ERROR — RESET GAME", 0);
       }
     }, 280);
 
@@ -205,57 +300,81 @@ export default function App() {
         clearTimeout(dealerStepTimeoutRef.current);
       }
     };
-  }, [endRound, play, playerTotal, state.bet, state.dealerHand, state.deck, state.gameState, state.roundId]);
+  }, [endRound, play, playerTotal, state.bet, state.dealerHand, state.deck, state.gameState, state.playerHand.length, state.roundId]);
 
-  const dealDisabled =
-    state.gameState === "player-turn" ||
-    state.gameState === "dealer-turn" ||
-    state.bet > state.bankroll ||
-    state.bankroll <= 0;
+  const dealDisabled = state.bet > state.bankroll || state.bankroll <= 0;
 
-  const hitDisabled = state.gameState !== "player-turn";
-  const standDisabled = state.gameState !== "player-turn";
-  const nextRoundDisabled = state.gameState !== "round-over";
+  const canDouble =
+    state.gameState === "player-turn" &&
+    state.playerHand.length === 2 &&
+    state.bankroll >= state.bet * 2;
+
+  const shouldShakeStatus = state.gameState === "round-over" && /BUST|LOSE|DEALER WINS/i.test(state.message);
+  const activeMultiplier = getStreakMultiplier(state.winStreak);
+  const playerMeta = (
+    <div className="flex flex-wrap items-center justify-end gap-2 text-right">
+      {state.winStreak >= 1 && (
+        <div
+          className={`surface-pill${activeMultiplier > 1 ? " surface-pill-accent" : ""}`}
+          style={activeMultiplier > 1 ? { boxShadow: "0 0 0 2px var(--status-win-glow)" } : {}}
+          title={activeMultiplier > 1 ? `Win streak bonus: ×${activeMultiplier} payout` : `${state.winStreak} consecutive win${state.winStreak > 1 ? "s" : ""}`}
+        >
+          <span className="text-[0.65rem] font-black uppercase tracking-[0.12em] opacity-70">Streak</span>
+          <span className="text-sm font-black sm:text-[0.95rem]">
+            {state.winStreak}{activeMultiplier > 1 ? ` ×${activeMultiplier}` : ""}
+          </span>
+        </div>
+      )}
+      <div className="surface-pill">
+        <span className="text-[0.65rem] font-black uppercase tracking-[0.12em] opacity-70">Bet</span>
+        <span className="numeric-tabular text-base font-black sm:text-lg">{formatCurrency(state.bet)}</span>
+      </div>
+      <motion.div
+        key={`${state.roundId}-${shouldShakeStatus ? "loss" : "neutral"}`}
+        initial={false}
+        animate={!reduceMotion && shouldShakeStatus ? { x: [-8, 8, -8, 8, 0] } : { x: 0 }}
+        transition={{ duration: reduceMotion ? 0 : 0.24, ease: "easeOut" }}
+      >
+        <div
+          className="surface-pill surface-pill-accent"
+          style={{ boxShadow: state.message.includes("WIN") ? "0 0 0 2px var(--status-win-glow)" : "none" }}
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+        >
+          <span className="text-[0.65rem] font-black uppercase tracking-[0.12em] opacity-70">Table</span>
+          <span className="text-sm font-black uppercase tracking-[0.08em] sm:text-[0.95rem]">{state.message}</span>
+        </div>
+      </motion.div>
+    </div>
+  );
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#0f1012] text-[#f5f5f5]">
-      <div className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(27,28,32,.96),rgba(20,21,24,.93)_36%,rgba(13,14,16,.95)_68%,rgba(8,8,10,.98))]" />
-      <div className="neo-noise-overlay pointer-events-none absolute inset-0" />
+    <div className="app-shell flex flex-col h-[100dvh] w-full overflow-hidden bg-[var(--page-bg)] text-[var(--page-text)]">
+      <div className="pointer-events-none fixed inset-0" style={{ background: "var(--page-gradient)" }} aria-hidden="true" />
+      <div className="neo-noise-overlay pointer-events-none fixed inset-0" aria-hidden="true" />
 
-      <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute left-[-14%] top-[7%] h-[42rem] w-[42rem] rounded-full border-[8px] border-white/10" />
-        <div className="absolute right-[-12%] top-[26%] h-[34rem] w-[46rem] rounded-[50%] border-[8px] border-white/8" />
-        <div className="absolute bottom-[20%] left-0 right-0 h-[16rem] bg-[linear-gradient(to_top,rgba(14,14,16,.84),rgba(46,46,49,.26),transparent)]" />
+      <div className="pointer-events-none fixed inset-0 overflow-hidden" aria-hidden="true">
+        <div className="absolute left-[-14%] top-[7%] h-[42rem] w-[42rem] rounded-full border-[8px]" style={{ borderColor: "var(--ambient-ring-strong)" }} />
+        <div className="absolute right-[-12%] top-[26%] h-[34rem] w-[46rem] rounded-[50%] border-[8px]" style={{ borderColor: "var(--ambient-ring-soft)" }} />
+        <div className="absolute bottom-[20%] left-0 right-0 h-[16rem]" style={{ background: "var(--ambient-floor-gradient)" }} />
       </div>
 
-      <div className="relative mx-auto max-w-[1460px] px-3 py-3 sm:px-5 sm:py-5 lg:px-8">
-        <div className="pb-44 xl:pb-0">
-          <TopBar bankroll={state.bankroll} bet={state.bet} onReset={resetGame} />
+      <div className="flex-1 overflow-y-auto px-2 py-2 sm:px-4 sm:py-5">
+        <div className="relative mx-auto max-w-3xl">
+          <TopBar
+            bankroll={state.bankroll}
+            bet={state.bet}
+            onReset={resetGame}
+            theme={theme}
+            onThemeChange={setTheme}
+            themeOptions={themeOptions}
+            difficulty={difficulty}
+            onDifficultyChange={setDifficulty}
+          />
 
-          <div className="grid gap-4 xl:grid-cols-[minmax(260px,30%)_minmax(0,1fr)] xl:items-start xl:gap-6">
-            <section className="order-1 space-y-4 xl:order-2 xl:space-y-6" aria-label="Game controls">
-            <BetControls
-              bet={state.bet}
-              chipValues={CHIP_VALUES}
-              selectedChip={state.selectedChip}
-              onSelectChip={selectChip}
-              onIncreaseBet={increaseBet}
-              onDecreaseBet={decreaseBet}
-            />
-
-              <ActionPanel
-                onDeal={startNewRound}
-                onNext={nextRound}
-                onHit={hit}
-                onStand={stand}
-                dealDisabled={dealDisabled}
-                nextDisabled={nextRoundDisabled}
-                hitDisabled={hitDisabled}
-                standDisabled={standDisabled}
-              />
-            </section>
-
-            <main className="order-2 border-4 border-black bg-[rgba(24,25,29,0.8)] p-3 shadow-[10px_10px_0_#000] sm:p-4 lg:p-5 xl:order-1" aria-label="Blackjack table">
+          <main className="bg-[var(--table-bg)] p-2 sm:p-4" aria-label="Blackjack table">
+            <div className="table-surface-shell space-y-3 sm:space-y-4">
               <HandZone
                 title="Dealer"
                 total={state.dealerRevealed ? dealerTotal : state.dealerHand.length ? `${dealerShownTotal}+` : "--"}
@@ -264,30 +383,48 @@ export default function App() {
                 revealHidden={state.dealerRevealed}
               />
 
+              <div className="table-seam" aria-hidden="true" />
+
               <MotionDiv
                 key={state.roundId}
-                initial={{ scale: 0.98, opacity: 0.86 }}
-                animate={{ scale: [0.99, 1.03, 1], opacity: [0.86, 1, 1] }}
-                transition={{ duration: 0.22, ease: "easeOut" }}
-                className="my-3 border-4 border-black bg-[#d7d7d7] px-4 py-4 text-center text-black shadow-[8px_8px_0_#000] sm:my-4"
+                initial={reduceMotion ? false : { scale: 0.985, opacity: 0.9 }}
+                animate={reduceMotion ? { scale: 1, opacity: 1 } : { scale: [0.99, 1.015, 1], opacity: [0.9, 1, 1] }}
+                transition={{ duration: reduceMotion ? 0 : 0.22, ease: "easeOut" }}
               >
-                <div className="text-xs font-black uppercase tracking-[0.08em]">Current Bet</div>
-                <div className="display-heavy mt-1 text-6xl font-black leading-none sm:text-7xl">${state.bet}</div>
-                <div
-                  className="mt-3 inline-block border-2 border-black bg-[#f5f5f5] px-3 py-2 text-sm font-black uppercase tracking-[0.1em]"
-                  role="status"
-                  aria-live="polite"
-                  aria-atomic="true"
-                >
-                  {state.message}
-                </div>
+                <HandZone title="Player" total={state.playerHand.length ? playerTotal : "--"} hand={state.playerHand} meta={playerMeta} />
               </MotionDiv>
-
-              <HandZone title="Player" total={state.playerHand.length ? playerTotal : "--"} hand={state.playerHand} />
-            </main>
-          </div>
+            </div>
+          </main>
         </div>
       </div>
+
+      <section
+        className="shrink-0 bg-[var(--page-bg)] px-3 pb-safe pt-2 border-t border-white/10 shadow-[0_-8px_20px_rgba(0,0,0,0.3)] z-50"
+        aria-label="Game controls"
+      >
+        <div className="control-rail mx-auto w-full max-w-3xl space-y-2.5 md:grid md:grid-cols-[1fr_1fr] md:items-end md:gap-3 md:space-y-0">
+          <BetControls
+            bet={state.bet}
+            chipValues={CHIP_VALUES}
+            selectedChip={state.selectedChip}
+            onSelectChip={selectChip}
+            onIncreaseBet={increaseBet}
+            onDecreaseBet={decreaseBet}
+            disabled={isGameActive}
+          />
+
+          <ActionPanel
+            gameState={state.gameState}
+            onDeal={startNewRound}
+            onNext={nextRound}
+            onHit={hit}
+            onStand={stand}
+            onDouble={doubleDown}
+            canDouble={canDouble}
+            dealDisabled={dealDisabled}
+          />
+        </div>
+      </section>
     </div>
   );
 }
