@@ -20,7 +20,7 @@ export default function AchievementToast({ achievementId, onDismiss }) {
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: -20, scale: 0.92 }}
           transition={{ type: "spring", stiffness: 340, damping: 28 }}
-          className="fixed top-4 left-1/2 z-[300] flex -translate-x-1/2 cursor-pointer items-center gap-3 rounded-2xl border-2 border-yellow-400/70 bg-zinc-900/96 px-4 py-3 shadow-[0_8px_40px_rgba(0,0,0,0.6)] backdrop-blur-md"
+          className="fixed top-4 left-1/2 z-[300] flex -translate-x-1/2 cursor-pointer items-center gap-3 rounded-2xl border-2 border-yellow-400/70 bg-zinc-950 px-4 py-3 shadow-[0_8px_40px_rgba(0,0,0,0.7)]"
           onClick={onDismiss}
           aria-label={`Achievement unlocked: ${achievement.title}. Tap to dismiss.`}
         >

@@ -149,6 +149,10 @@ h3,
 
 .app-shell {
   transition: background-color 180ms ease, color 180ms ease;
+  /* Scope paints to this subtree — prevents card animations from
+     triggering full-page repaints on iOS */
+  isolation: isolate;
+  contain: layout style;
 }
 
 /* Hide scrollbar on the table scroll area while keeping scrollability */

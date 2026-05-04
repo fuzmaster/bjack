@@ -37,29 +37,33 @@ export default function CardFace({ card, hidden = false, reveal = false, index =
 
   return (
     <MotionDiv
-      layout="position"
-      initial={reduceMotion ? false : { opacity: 0, x: 120, y: -42, rotate: -6, scale: 0.95 }}
-      animate={reduceMotion ? { opacity: 1, x: 0, y: 0, rotate: 0, scale: 1 } : { opacity: 1, x: 0, y: 0, rotate: 0, scale: 1 }}
-      exit={reduceMotion ? { opacity: 1 } : { opacity: 0, y: 8, scale: 0.96 }}
-      transition={reduceMotion ? { duration: 0 } : { type: "spring", stiffness: 250, damping: 24, delay: index * 0.03 }}
-      className="relative"
-      style={{
-        width: "var(--card-w)",
-        height: "var(--card-h)",
-        transformStyle: "preserve-3d",
+      // No layout="position" — prevents synchronous layout measurement on every card add
+      initial={reduceMotion ? false : { opacity: 0, x: 70, y: -24, rotate: -4, scale: 0.9 }}
+      animate={{
+        opacity: 1, x: 0, y: 0, rotate: 0, scale: 1,
+        // Stagger entry only — per-state transition so exit isn't delayed
+        transition: reduceMotion
+          ? { duration: 0 }
+          : { type: "tween", duration: 0.2, ease: [0.18, 0.7, 0.35, 1], delay: index * 0.04 },
       }}
+      exit={{
+        opacity: 0, scale: 0.9,
+        // Fast exit, no stagger — cards leave simultaneously
+        transition: { duration: reduceMotion ? 0 : 0.1 },
+      }}
+      className="relative"
+      style={{ width: "var(--card-w)", height: "var(--card-h)" }}
       role="img"
       aria-label={hidden && !reveal ? "Face-down card" : ariaLabel}
     >
-      <AnimatePresence mode="wait">
+      <AnimatePresence mode="wait" initial={false}>
         {hidden && !reveal ? (
           <MotionDiv
             key="back"
-            initial={reduceMotion ? false : { rotateY: 0 }}
-            animate={reduceMotion ? { rotateY: 0, opacity: 1 } : { rotateY: 0 }}
-            exit={reduceMotion ? { opacity: 0 } : { rotateY: 90, opacity: 0 }}
-            transition={{ duration: reduceMotion ? 0 : 0.13 }}
+            initial={{ opacity: 1 }}
+            exit={{ scaleX: 0, opacity: 0, transition: { duration: reduceMotion ? 0 : 0.1, ease: "easeIn" } }}
             className="absolute inset-0 border-4 border-black bg-[var(--card-back-bg)]"
+            style={{ transformOrigin: "center" }}
           >
             <div className="absolute inset-2 border-2 border-black bg-[var(--card-back-inner-bg)]" />
             <div className="absolute inset-0 flex items-center justify-center text-3xl font-black text-[var(--card-back-text)]" aria-hidden="true">?</div>
@@ -67,10 +71,10 @@ export default function CardFace({ card, hidden = false, reveal = false, index =
         ) : (
           <MotionDiv
             key="front"
-            initial={reduceMotion ? false : { rotateY: 90, opacity: 0 }}
-            animate={{ rotateY: 0, opacity: 1 }}
-            transition={{ duration: reduceMotion ? 0 : 0.13 }}
+            initial={reduceMotion ? false : { scaleX: 0, opacity: 0 }}
+            animate={{ scaleX: 1, opacity: 1, transition: { duration: reduceMotion ? 0 : 0.12, ease: "easeOut" } }}
             className="absolute inset-0 border-4 border-black bg-[var(--card-front-bg)] text-[var(--card-front-text)] shadow-[6px_6px_0_#000]"
+            style={{ transformOrigin: "center" }}
           >
             <div className={`absolute left-1.5 top-1.5 flex flex-col leading-none ${suitClass}`}>
               <span className="font-black leading-none" style={{ fontSize: "var(--card-rank-size)" }} aria-hidden="true">{card.rank}</span>

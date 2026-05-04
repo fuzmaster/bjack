@@ -351,10 +351,8 @@ export default function App() {
 
   return (
     <div className="app-shell flex flex-col h-[100dvh] w-full overflow-hidden bg-[var(--page-bg)] text-[var(--page-text)]">
-      <div className="pointer-events-none fixed inset-0" style={{ background: "var(--page-gradient)" }} aria-hidden="true" />
-      <div className="neo-noise-overlay pointer-events-none fixed inset-0" aria-hidden="true" />
-
-      <div className="pointer-events-none fixed inset-0 overflow-hidden" aria-hidden="true">
+      {/* Single composited layer for all static background decoration */}
+      <div className="neo-noise-overlay pointer-events-none fixed inset-0 overflow-hidden" aria-hidden="true" style={{ background: "var(--page-gradient)", willChange: "transform" }}>
         <div className="absolute left-[-14%] top-[7%] h-[42rem] w-[42rem] rounded-full border-[8px]" style={{ borderColor: "var(--ambient-ring-strong)" }} />
         <div className="absolute right-[-12%] top-[26%] h-[34rem] w-[46rem] rounded-[50%] border-[8px]" style={{ borderColor: "var(--ambient-ring-soft)" }} />
         <div className="absolute bottom-[20%] left-0 right-0 h-[16rem]" style={{ background: "var(--ambient-floor-gradient)" }} />
