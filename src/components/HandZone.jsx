@@ -3,11 +3,13 @@ import CardFace from "./CardFace";
 
 export default function HandZone({ title, total, hand, hiddenSecond = false, revealHidden = false, meta = null }) {
   return (
-    <section className="mx-auto w-full max-w-[44rem] px-2 py-3 sm:px-3 sm:py-4" aria-label={`${title} hand`}>
-      <div className="mb-2 flex items-start justify-between gap-3">
+    <section className="mx-auto w-full max-w-[44rem] px-2 py-1 sm:px-3 sm:py-2" aria-label={`${title} hand`}>
+      <div className="mb-1 flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <div className="text-xs font-black uppercase tracking-[0.08em] text-[var(--hand-title)]">{title}</div>
-          <div className="numeric-tabular text-3xl font-black leading-none text-[var(--hand-total)] sm:text-4xl">{total}</div>
+          <div className="text-xs font-black uppercase tracking-[0.1em] text-[var(--hand-title)]">{title}</div>
+          <div className="numeric-tabular font-black leading-none text-[var(--hand-total)]" style={{ fontSize: "clamp(2rem, 8vw, 3rem)" }}>
+            {total}
+          </div>
         </div>
         {meta ? <div className="flex shrink-0 items-start">{meta}</div> : null}
       </div>
@@ -24,7 +26,9 @@ export default function HandZone({ title, total, hand, hiddenSecond = false, rev
           ))}
         </AnimatePresence>
         {hand.length === 0 ? (
-          <div className="flex w-full items-center justify-center py-4 text-sm font-semibold text-[var(--hand-empty)]">Waiting for deal</div>
+          <div className="flex w-full items-center justify-center py-4 text-base font-bold text-[var(--hand-empty)]">
+            Waiting for deal
+          </div>
         ) : null}
       </div>
     </section>

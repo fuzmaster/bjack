@@ -14,41 +14,13 @@ export default function BetControls({
 }) {
   return (
     <div
-      className={`control-cluster p-1 text-[var(--panel-text)] transition-opacity duration-200 sm:p-2 ${
-        disabled ? "pointer-events-none opacity-55" : ""
+      className={`control-cluster px-2 pt-2 pb-1 text-[var(--panel-text)] transition-opacity duration-200 sm:px-3 sm:pt-2 ${
+        disabled ? "pointer-events-none opacity-40" : ""
       }`}
       aria-disabled={disabled || undefined}
     >
-      <div className="mb-3 text-sm font-black uppercase tracking-[0.07em] sm:mb-4">Bet Controls</div>
-
-      <div className="mb-3 grid grid-cols-[56px_1fr_56px] items-center gap-2 sm:mb-4 sm:grid-cols-[60px_1fr_60px] sm:gap-2.5">
-        <UIButton
-          onClick={onDecreaseBet}
-          className="h-12 w-12 bg-[var(--bet-adjust-bg)] p-0 text-[var(--panel-text)] shadow-[4px_4px_0_#000] sm:h-14 sm:w-14"
-          aria-label="Decrease bet"
-          disabled={disabled}
-        >
-          <Minus className="h-5 w-5" />
-        </UIButton>
-
-        <div className="surface-readout px-3 py-2 text-center sm:py-2.5">
-          <div className="text-sm font-black uppercase tracking-[0.07em]">Current Bet</div>
-          <div className="display-heavy numeric-tabular font-black leading-none" style={{ fontSize: "clamp(1.75rem, 8vw, 3rem)" }}>
-            {formatCurrency(bet)}
-          </div>
-        </div>
-
-        <UIButton
-          onClick={onIncreaseBet}
-          className="h-12 w-12 bg-[var(--bet-adjust-bg)] p-0 text-[var(--panel-text)] shadow-[4px_4px_0_#000] sm:h-14 sm:w-14"
-          aria-label="Increase bet"
-          disabled={disabled}
-        >
-          <Plus className="h-5 w-5" />
-        </UIButton>
-      </div>
-
-      <div className="flex flex-wrap justify-center gap-2.5 pt-0.5">
+      {/* Chip row */}
+      <div className="mb-2 flex justify-center gap-3 sm:gap-4">
         {chipValues.map((value) => (
           <Chip
             key={value}
@@ -57,6 +29,34 @@ export default function BetControls({
             onClick={() => onSelectChip(value)}
           />
         ))}
+      </div>
+
+      {/* Bet amount with +/- */}
+      <div className="grid grid-cols-[64px_1fr_64px] items-center gap-2">
+        <UIButton
+          onClick={onDecreaseBet}
+          className="h-14 w-full bg-[var(--bet-adjust-bg)] p-0 text-[var(--panel-text)] shadow-[4px_4px_0_#000]"
+          aria-label="Decrease bet"
+          disabled={disabled}
+        >
+          <Minus className="h-6 w-6" />
+        </UIButton>
+
+        <div className="surface-readout px-3 py-2 text-center">
+          <div className="text-xs font-black uppercase tracking-[0.1em] opacity-60">Current Bet</div>
+          <div className="display-heavy numeric-tabular font-black leading-none" style={{ fontSize: "clamp(2rem, 9vw, 3.25rem)" }}>
+            {formatCurrency(bet)}
+          </div>
+        </div>
+
+        <UIButton
+          onClick={onIncreaseBet}
+          className="h-14 w-full bg-[var(--bet-adjust-bg)] p-0 text-[var(--panel-text)] shadow-[4px_4px_0_#000]"
+          aria-label="Increase bet"
+          disabled={disabled}
+        >
+          <Plus className="h-6 w-6" />
+        </UIButton>
       </div>
     </div>
   );

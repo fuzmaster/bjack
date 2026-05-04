@@ -76,22 +76,22 @@
   --button-disabled-shadow: #000000;
 
   /* ── Fluid card sizing ──────────────────────────────────────────────────── */
-  /* Cards scale with viewport width: min 80px wide, max 144px wide.          */
-  /* Height is always card-w × 1.4 (standard playing card ratio).             */
-  --card-w: clamp(80px, 22vw, 144px);
+  --card-w: clamp(80px, 22vw, 92px);
   --card-h: calc(var(--card-w) * 1.4);
-  /* Rank text: 11–18px */
-  --card-rank-size: clamp(0.7rem, 2.5vw, 1.125rem);
-  /* Small pips (corners): 10–16px */
-  --card-pip-sm: clamp(10px, 2.4vw, 16px);
-  /* Center pip: 40–64px */
-  --card-pip-lg: clamp(40px, 11vw, 64px);
-  /* Face-card motif box: uses proportion of card width */
+  --card-rank-size: clamp(0.75rem, 2.6vw, 1.2rem);
+  --card-pip-sm: clamp(11px, 2.6vw, 17px);
+  --card-pip-lg: clamp(42px, 12vw, 68px);
   --facemark-size: calc(var(--card-w) * 0.57);
-  /* Center pip inside face motif */
-  --facemark-center-pip: clamp(18px, 5vw, 28px);
-  /* Accent color used in difficulty buttons */
+  --facemark-center-pip: clamp(18px, 5vw, 30px);
   --accent: hsl(var(--theme-hue) 60% 42%);
+
+  /* ── Semantic action button colors (fixed, theme-independent) ─────────── */
+  --btn-hit: #1d6bf5;
+  --btn-hit-shadow: #0e3d99;
+  --btn-stand: #d97706;
+  --btn-stand-shadow: #92400e;
+  --btn-double: #7c3aed;
+  --btn-double-shadow: #4c1d95;
 }
 
 html,
@@ -151,6 +151,15 @@ h3,
   transition: background-color 180ms ease, color 180ms ease;
 }
 
+/* Hide scrollbar on the table scroll area while keeping scrollability */
+.table-scroll {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.table-scroll::-webkit-scrollbar {
+  display: none;
+}
+
 .numeric-tabular {
   font-variant-numeric: tabular-nums;
 }
@@ -183,7 +192,7 @@ h3,
 
 .surface-pill {
   display: inline-flex;
-  min-height: 3rem;
+  min-height: 2.4rem;
   flex-direction: column;
   justify-content: center;
   gap: 0.1rem;

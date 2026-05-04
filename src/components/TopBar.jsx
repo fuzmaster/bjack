@@ -1,7 +1,5 @@
-import { Coins, Crown, RefreshCcw } from "lucide-react";
+import { RefreshCcw } from "lucide-react";
 import { formatCurrency } from "../utils/formatters";
-import UIButton from "./UIButton";
-import StatBlock from "./StatBlock";
 import { THEMES } from "../theme/themes";
 import { DIFFICULTY_PRESETS } from "../game/blackjack";
 
@@ -16,30 +14,30 @@ export default function TopBar({
   onDifficultyChange,
 }) {
   return (
-    <div className="mb-3 grid gap-2 lg:mb-4 lg:grid-cols-[minmax(0,1fr)_minmax(240px,34%)] lg:items-start lg:gap-3">
-      {/* Branding panel — compact on mobile, full on desktop */}
-      <div className="topbar-shell p-3 text-[var(--panel-text)] sm:p-4">
-        <div className="mb-1 hidden flex-wrap gap-2 md:mb-3 md:flex">
-          <span className="surface-chip px-2 py-1 text-xs font-black uppercase tracking-[0.08em]">
-            One Page Blackjack
-          </span>
-          <span className="surface-chip surface-chip-alt px-2 py-1 text-xs font-black uppercase tracking-[0.08em]">
-            Night Table
-          </span>
+    <div
+      className="flex items-center justify-between gap-2 px-3 py-2.5 border-b-2 border-white/10 sm:px-4 sm:py-3"
+      style={{ background: "var(--page-bg)" }}
+    >
+      {/* Bankroll */}
+      <div className="min-w-0 shrink-0">
+        <div className="text-[0.55rem] font-black uppercase tracking-widest opacity-50 text-[var(--page-text)]">
+          Bankroll
         </div>
+        <div className="numeric-tabular text-[1.45rem] font-black leading-none text-[var(--page-text)] sm:text-[1.6rem]">
+          {formatCurrency(bankroll)}
+        </div>
+      </div>
 
-        {/* Title: small on phones, big on desktop */}
-        <h1 className="display-heavy font-black uppercase leading-none"
-          style={{ fontSize: "clamp(1.6rem, 7vw, 5rem)" }}>Velvet 21</h1>
-
-        <p className="mt-2 hidden max-w-2xl text-sm font-semibold text-[var(--panel-muted)] md:mt-3 md:block md:text-base">
-          Chunky controls in front. Atmospheric sci-fi depth in the back.
-        </p>
-
-        <div className="mt-2 hidden flex-wrap items-center gap-2 md:mt-4 md:flex md:gap-3">
-          <div className="inline-flex items-center gap-1.5" role="group" aria-label="Theme selector">
+      {/* Center group: title + dots + difficulty */}
+      <div className="flex min-w-0 flex-1 items-center justify-center gap-3">
+        {/* Title + theme dots */}
+        <div className="flex flex-col items-center gap-1 shrink-0">
+          <span className="text-[0.55rem] font-black uppercase tracking-[0.18em] opacity-60 text-[var(--page-text)]">
+            Velvet 21
+          </span>
+          <div className="flex gap-1.5">
             {themeOptions.map((option) => {
-              const hue = THEMES[option.key]?.hue ?? 208;
+              const hue = THEMES[option.key]?.hue ?? 138;
               const isActive = theme === option.key;
               return (
                 <button
@@ -49,59 +47,55 @@ export default function TopBar({
                   aria-pressed={isActive}
                   aria-label={`${option.label} theme`}
                   title={option.label}
-                  className="relative h-9 w-9 rounded-full border-[3px] border-black transition-transform"
+                  className="h-5 w-5 rounded-full border-2 border-white/30 transition-transform touch-manipulation"
                   style={{
-                    background: `hsl(${hue} 50% 38%)`,
-                    boxShadow: isActive
-                      ? `0 0 0 2px hsl(${hue} 60% 70%), 3px 3px 0 #000`
-                      : "2px 2px 0 #000",
-                    transform: isActive ? "translateY(-2px)" : "none",
+                    background: `hsl(${hue} 55% 42%)`,
+                    boxShadow: isActive ? `0 0 0 2px hsl(${hue} 70% 72%)` : "none",
+                    transform: isActive ? "scale(1.2)" : "none",
                   }}
-                >
-                  {isActive && (
-                    <span className="absolute inset-0 flex items-center justify-center text-xs font-black text-white drop-shadow-[0_1px_1px_rgba(0,0,0,0.6)]" aria-hidden="true">
-                      ✓
-                    </span>
-                  )}
-                </button>
+                />
               );
             })}
           </div>
         </div>
+
+        {/* Difficulty tabs — desktop only */}
+        <div className="hidden md:flex items-center gap-1 rounded-lg border border-white/15 bg-white/8 p-1">
+          {Object.entries(DIFFICULTY_PRESETS).map(([key, preset]) => (
+            <button
+              key={key}
+              type="button"
+              onClick={() => onDifficultyChange?.(key)}
+              className={`rounded px-3 py-1 text-xs font-black uppercase tracking-[0.06em] transition-all touch-manipulation ${
+                difficulty === key
+                  ? "bg-white/20 text-white shadow-sm"
+                  : "text-white/50 hover:text-white/80"
+              }`}
+            >
+              {preset.label}
+            </button>
+          ))}
+        </div>
       </div>
 
-      {/* Stats + controls panel */}
-      <div className="grid grid-cols-2 items-stretch gap-2 lg:grid-cols-1 lg:gap-2.5">
-        <StatBlock label="Bankroll" value={formatCurrency(bankroll)} icon={<Coins className="h-5 w-5" />} />
-        <StatBlock label="Bet" value={formatCurrency(bet)} icon={<Crown className="h-5 w-5" />} />
-
-        {/* Difficulty selector */}
-        <div className="surface-stat col-span-2 hidden w-full p-3 md:block lg:col-span-1">
-          <div className="mb-1.5 text-sm font-black uppercase tracking-[0.07em] text-[var(--panel-muted)]">Difficulty</div>
-          <div className="flex gap-1.5">
-            {Object.entries(DIFFICULTY_PRESETS).map(([key, preset]) => (
-              <button
-                key={key}
-                type="button"
-                onClick={() => onDifficultyChange?.(key)}
-                className={`flex-1 rounded border-2 border-black py-2 text-sm font-black uppercase tracking-[0.06em] transition-all ${
-                  difficulty === key
-                    ? "bg-[var(--accent)] text-white shadow-[2px_2px_0_#000]"
-                    : "bg-transparent text-[var(--panel-text)]/82 hover:text-[var(--panel-text)]"
-                }`}
-              >
-                {preset.label}
-              </button>
-            ))}
+      {/* Bet + Reset */}
+      <div className="flex shrink-0 items-center gap-2">
+        <div className="text-right">
+          <div className="text-[0.55rem] font-black uppercase tracking-widest opacity-50 text-[var(--page-text)]">
+            Bet
+          </div>
+          <div className="numeric-tabular text-[1.45rem] font-black leading-none text-[var(--page-text)] sm:text-[1.6rem]">
+            {formatCurrency(bet)}
           </div>
         </div>
-
-        <UIButton
-          className="col-span-2 min-h-[52px] w-full bg-[var(--reset-button-bg)] text-[var(--reset-button-text)] shadow-[6px_6px_0_#000] lg:col-span-1 lg:min-h-[60px]"
+        <button
           onClick={onReset}
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border-2 border-white/20 bg-white/10 text-[var(--page-text)] transition-colors active:bg-white/20 hover:bg-white/15 touch-manipulation sm:h-10 sm:w-10"
+          aria-label="Reset game"
+          title="Reset game"
         >
-          <RefreshCcw className="mr-2 h-4 w-4" /> Reset
-        </UIButton>
+          <RefreshCcw className="h-4 w-4" />
+        </button>
       </div>
     </div>
   );

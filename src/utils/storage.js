@@ -19,9 +19,9 @@ export function getStoredTheme() {
 
   try {
     const value = storage.getItem(THEME_KEY);
-    return isThemeKey(value) ? value : "modern";
+    return isThemeKey(value) ? value : "classic";
   } catch {
-    return "modern";
+    return "classic";
   }
 }
 
