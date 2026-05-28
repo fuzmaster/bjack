@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import confetti from "canvas-confetti";
-import { ChevronDown, ChevronUp } from "lucide-react";
 import TopBar from "./components/TopBar";
 import BetControls from "./components/BetControls";
 import ActionPanel from "./components/ActionPanel";
@@ -42,7 +41,6 @@ export default function App() {
   const [isMuted, setIsMuted] = useState(() => getStoredMuted());
   const [gameSpeed, setGameSpeed] = useState(() => getStoredGameSpeed());
   const [isStatsModalOpen, setIsStatsModalOpen] = useState(false);
-  const [isTopInfoOpen, setIsTopInfoOpen] = useState(true);
   const [isControlWindowOpen, setIsControlWindowOpen] = useState(true);
   const { play, unlockAudio } = useGameAudio(isMuted);
   const { theme, setTheme, themeOptions } = useTheme();
@@ -506,49 +504,29 @@ export default function App() {
       <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
         {/* LEFT COLUMN: Top info + Game table */}
         <div className="flex min-h-0 flex-1 flex-col">
-          {/* TOP WINDOW: Table Info */}
-          <section
-            className="shrink-0 bg-[var(--page-bg)] px-2 py-1 sm:px-3 sm:py-1.5"
+          {/* TOP STRIP: slim always-visible bar */}
+          <header
+            className="shrink-0 px-3 py-1.5 sm:px-4"
             style={{ borderBottom: "1px solid oklch(0.82 0.10 78 / 0.10)" }}
             aria-label="Table information"
           >
-            <button
-              type="button"
-              onClick={() => setIsTopInfoOpen((prev) => !prev)}
-              className="surface-stat flex w-full items-center justify-between px-2 py-1 text-left"
-              aria-expanded={isTopInfoOpen}
-              aria-controls="top-info-panel"
-            >
-              <span
-                className="text-[0.62rem] font-bold uppercase tracking-[0.12em]"
-                style={{ color: "var(--panel-text)", fontFamily: "var(--font-sans)" }}
-              >
-                TABLE INFO
-              </span>
-              {isTopInfoOpen ? <ChevronUp className="h-3.5 w-3.5" style={{ color: "var(--panel-text)" }} /> : <ChevronDown className="h-3.5 w-3.5" style={{ color: "var(--panel-text)" }} />}
-            </button>
-
-            {isTopInfoOpen && (
-              <div id="top-info-panel" className="mt-1 px-0.5">
-                <TopBar
-                  bankroll={state.bankroll}
-                  bet={state.bet}
-                  onReset={resetGame}
-                  theme={theme}
-                  onThemeChange={setTheme}
-                  themeOptions={themeOptions}
-                  difficulty={difficulty}
-                  onDifficultyChange={setDifficulty}
-                  isMuted={isMuted}
-                  onToggleMute={toggleMute}
-                  gameSpeed={gameSpeed}
-                  onToggleGameSpeed={toggleGameSpeed}
-                  onOpenStats={openStatsModal}
-                  compact
-                />
-              </div>
-            )}
-          </section>
+            <TopBar
+              bankroll={state.bankroll}
+              bet={state.bet}
+              onReset={resetGame}
+              theme={theme}
+              onThemeChange={setTheme}
+              themeOptions={themeOptions}
+              difficulty={difficulty}
+              onDifficultyChange={setDifficulty}
+              isMuted={isMuted}
+              onToggleMute={toggleMute}
+              gameSpeed={gameSpeed}
+              onToggleGameSpeed={toggleGameSpeed}
+              onOpenStats={openStatsModal}
+              compact
+            />
+          </header>
 
           {/* MIDDLE: Game Table */}
           <main
