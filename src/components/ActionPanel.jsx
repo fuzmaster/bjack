@@ -10,6 +10,9 @@ export default function ActionPanel({
   onDouble,
   onSplit,
   onRescue,
+  onTakeInsurance,
+  onDeclineInsurance,
+  insuranceCost = 0,
   canDouble,
   canSplit,
   dealDisabled,
@@ -21,6 +24,7 @@ export default function ActionPanel({
   const isRoundOver = gameState === "round-over";
   const isPlayerTurn = gameState === "player-turn";
   const isDealerTurn = gameState === "dealer-turn";
+  const isInsurance = gameState === "insurance";
   const isBankrupt = isRoundOver && bankroll === 0 && bet === 0;
 
   const labelClass = `mb-3 font-bold uppercase tracking-[0.10em] text-[var(--hand-title)] ${compact ? "text-xs" : "text-sm"}`;
@@ -59,21 +63,32 @@ export default function ActionPanel({
       {isInsurance && (
         <>
           <div className="mb-2 text-center">
-            <div className="text-xs font-black uppercase tracking-[0.08em] opacity-60">Dealer Shows Ace</div>
-            <div className="mt-0.5 text-[0.65rem] opacity-50">Insurance pays 2 to 1 if dealer has blackjack</div>
+            <div
+              className="text-xs font-bold uppercase tracking-[0.10em]"
+              style={{ color: "var(--hand-title)", fontFamily: "var(--font-sans)" }}
+            >
+              Dealer Shows Ace
+            </div>
+            <div
+              className="mt-0.5 text-[0.65rem]"
+              style={{ color: "var(--panel-muted)", fontFamily: "var(--font-sans)" }}
+            >
+              Insurance pays 2 to 1 if dealer has blackjack
+            </div>
           </div>
-          <div className="grid grid-cols-2 gap-2 sm:gap-3">
+          <div className="grid grid-cols-2 gap-2 sm:gap-2.5">
             <UIButton
+              tone="hit"
               onClick={onTakeInsurance}
-              className="min-h-[72px] flex-col text-base text-white shadow-[4px_4px_0_#000]"
-              style={{ background: "#059669" }}
+              className={`${btnHeight} flex-col`}
             >
               <span>Take Insurance</span>
-              <span className="mt-0.5 text-sm font-bold opacity-80">${insuranceCost}</span>
+              <span className="mt-0.5 text-xs opacity-75">${insuranceCost}</span>
             </UIButton>
             <UIButton
+              tone="ghost"
               onClick={onDeclineInsurance}
-              className="min-h-[72px] text-base text-[var(--button-text)] bg-[var(--button-deal-bg)] shadow-[4px_4px_0_#000]"
+              className={`${btnHeight}`}
             >
               No Thanks
             </UIButton>

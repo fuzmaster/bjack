@@ -53,6 +53,9 @@ export default function App() {
   const previousGameStateRef = useRef(state.gameState);
   const previousRoundStateRef = useRef(state.gameState);
   const previousBankrollRef = useRef(state.bankroll);
+  const achievementGameStateRef = useRef(state.gameState);
+  const achievementWinStreakRef = useRef(state.winStreak ?? 0);
+  const bankrollAtDealRef = useRef(state.bankroll);
   const reduceMotion = useReducedMotion();
 
   const playerTotals = state.playerHands.map((hand) => handValue(hand));
@@ -657,6 +660,9 @@ export default function App() {
               onDouble={doubleDown}
               onSplit={splitHand}
               onRescue={rescueFunds}
+              onTakeInsurance={takeInsurance}
+              onDeclineInsurance={declineInsurance}
+              insuranceCost={Math.floor((state.handBets?.[0] ?? state.bet) / 2)}
               canDouble={canDouble}
               canSplit={canSplit}
               dealDisabled={dealDisabled}
