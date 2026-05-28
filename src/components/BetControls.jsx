@@ -11,40 +11,68 @@ export default function BetControls({
   onIncreaseBet,
   onDecreaseBet,
   disabled = false,
+  compact = false,
 }) {
   return (
     <div
-      className={`control-cluster p-1 text-[var(--panel-text)] transition-opacity duration-200 sm:p-2 ${
-        disabled ? "pointer-events-none opacity-55" : ""
+      className={`control-cluster p-1 transition-opacity duration-200 sm:p-2 ${
+        disabled ? "pointer-events-none opacity-50" : ""
       }`}
       aria-disabled={disabled || undefined}
     >
-      <div className="mb-3 text-sm font-black uppercase tracking-[0.07em] sm:mb-4">Bet Controls</div>
+      <div
+        className={`mb-3 font-bold uppercase tracking-[0.10em] ${compact ? "text-xs" : "text-sm"}`}
+        style={{ color: "var(--hand-title)", fontFamily: "var(--font-sans)" }}
+      >
+        Bet Controls
+      </div>
 
-      <div className="mb-3 grid grid-cols-[56px_1fr_56px] items-center gap-2 sm:mb-4 sm:grid-cols-[60px_1fr_60px] sm:gap-2.5">
+      <div
+        className={`mb-3 grid items-center gap-2 ${
+          compact
+            ? "grid-cols-[40px_1fr_40px] sm:grid-cols-[44px_1fr_44px]"
+            : "grid-cols-[52px_1fr_52px] sm:grid-cols-[56px_1fr_56px]"
+        }`}
+      >
         <UIButton
+          tone="ghost"
           onClick={onDecreaseBet}
-          className="h-12 w-12 bg-[var(--bet-adjust-bg)] p-0 text-[var(--panel-text)] shadow-[4px_4px_0_#000] sm:h-14 sm:w-14"
+          className={`${compact ? "h-10 w-10" : "h-12 w-12"} p-0`}
           aria-label="Decrease bet"
           disabled={disabled}
         >
-          <Minus className="h-5 w-5" />
+          <Minus className={compact ? "h-4 w-4" : "h-5 w-5"} />
         </UIButton>
 
-        <div className="surface-readout px-3 py-2 text-center sm:py-2.5">
-          <div className="text-sm font-black uppercase tracking-[0.07em]">Current Bet</div>
-          <div className="display-heavy numeric-tabular font-black leading-none" style={{ fontSize: "clamp(1.75rem, 8vw, 3rem)" }}>
+        <div className={`surface-readout px-3 text-center ${compact ? "py-1.5" : "py-2"}`}>
+          <div
+            className={`${compact ? "text-xs" : "text-sm"} font-bold uppercase tracking-[0.10em]`}
+            style={{ color: "var(--panel-muted)", fontFamily: "var(--font-sans)" }}
+          >
+            Current Bet
+          </div>
+          <div
+            className="numeric-tabular leading-none"
+            style={{
+              fontFamily: "var(--font-display)",
+              fontStyle: "italic",
+              fontWeight: 500,
+              fontSize: compact ? "clamp(1.1rem, 4.5vw, 1.7rem)" : "clamp(1.6rem, 7.5vw, 2.8rem)",
+              color: "var(--page-text)",
+            }}
+          >
             {formatCurrency(bet)}
           </div>
         </div>
 
         <UIButton
+          tone="ghost"
           onClick={onIncreaseBet}
-          className="h-12 w-12 bg-[var(--bet-adjust-bg)] p-0 text-[var(--panel-text)] shadow-[4px_4px_0_#000] sm:h-14 sm:w-14"
+          className={`${compact ? "h-10 w-10" : "h-12 w-12"} p-0`}
           aria-label="Increase bet"
           disabled={disabled}
         >
-          <Plus className="h-5 w-5" />
+          <Plus className={compact ? "h-4 w-4" : "h-5 w-5"} />
         </UIButton>
       </div>
 

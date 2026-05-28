@@ -1,8 +1,32 @@
-export default function UIButton({ children, className = "", ...props }) {
+/**
+ * UIButton — supports both the new brass tone system and legacy className overrides.
+ *
+ * Usage with tone (new):
+ *   <UIButton tone="hit">Hit</UIButton>
+ *   <UIButton tone="stand">Stand</UIButton>
+ *   <UIButton tone="double">Double Down</UIButton>
+ *   <UIButton tone="deal">Deal</UIButton>
+ *   <UIButton tone="ghost">Cancel</UIButton>
+ *
+ * Usage legacy (still works for TopBar / BetControls):
+ *   <UIButton className="bg-[var(--reset-button-bg)] text-[var(--reset-button-text)]">Reset</UIButton>
+ */
+export default function UIButton({ children, className = "", tone = null, ...props }) {
+  if (tone) {
+    return (
+      <button
+        {...props}
+        className={`v21-btn tone-${tone} ${className}`}
+      >
+        {children}
+      </button>
+    );
+  }
+
   return (
     <button
       {...props}
-      className={`ui-button inline-flex min-h-[56px] select-none items-center justify-center rounded-none border-4 border-black px-4 py-3 text-base font-black uppercase tracking-[0.11em] transition active:translate-x-[2px] active:translate-y-[2px] disabled:cursor-not-allowed disabled:opacity-100 touch-manipulation ${className}`}
+      className={`ui-button inline-flex min-h-[48px] select-none items-center justify-center px-4 py-2.5 text-sm disabled:cursor-not-allowed touch-manipulation ${className}`}
     >
       {children}
     </button>

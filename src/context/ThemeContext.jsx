@@ -17,6 +17,8 @@ export function ThemeProvider({ children, initialTheme = "modern" }) {
     root.dataset.theme = theme;
     root.style.setProperty("--theme-hue", String(activeTheme.hue));
     root.style.setProperty("--theme-preset-hue", String(activeTheme.hue));
+    root.style.setProperty("--felt-h", String(activeTheme.feltH ?? activeTheme.hue));
+    root.style.setProperty("--felt-c", String(activeTheme.feltC ?? 0.04));
 
     setStoredTheme(theme);
   }, [theme]);
