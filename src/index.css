@@ -47,24 +47,16 @@
   --theme-accent: oklch(0.66 0.11 64);
 
   /* Legacy semantic variables — now mapped to velvet palette */
-  --page-bg: oklch(0.13 0.014 50);
+  --page-bg: oklch(0.13 calc(var(--felt-c) * 0.55) var(--felt-h));
   --page-text: oklch(0.93 0.010 72);
   --page-gradient:
-    radial-gradient(120% 92% at 50% -12%, oklch(0.30 calc(var(--felt-c) * 1.2) var(--felt-h) / 0.22), transparent 58%),
-    radial-gradient(80% 64% at 10% 22%, oklch(0.25 var(--felt-c) var(--felt-h) / 0.14), transparent 64%),
-    linear-gradient(
-      to bottom,
-      oklch(0.16 0.014 50 / 0.99) 0%,
-      oklch(0.14 0.013 50 / 0.97) 42%,
-      oklch(0.12 0.012 50 / 0.98) 74%,
-      oklch(0.10 0.010 50 / 1.00) 100%
-    );
-  --ambient-ring-strong: oklch(0.66 0.11 64 / 0.08);
-  --ambient-ring-soft: oklch(0.66 0.11 64 / 0.05);
+    radial-gradient(120% 92% at 50% -12%, oklch(0.30 calc(var(--felt-c) * 1.2) var(--felt-h) / 0.28), transparent 58%),
+    radial-gradient(80% 64% at 10% 22%, oklch(0.25 var(--felt-c) var(--felt-h) / 0.18), transparent 64%);
+  --ambient-glow-top: radial-gradient(ellipse 70% 40% at 50% -10%, oklch(0.35 calc(var(--felt-c) * 1.4) var(--felt-h) / 0.35), transparent 70%);
   --ambient-floor-gradient: linear-gradient(
     to top,
-    oklch(0.10 0.010 50 / 0.66) 0%,
-    oklch(0.20 0.014 55 / 0.28) 42%,
+    oklch(0.10 calc(var(--felt-c) * 0.4) var(--felt-h) / 0.60) 0%,
+    oklch(0.16 calc(var(--felt-c) * 0.6) var(--felt-h) / 0.22) 42%,
     transparent 100%
   );
   --noise-opacity: 0.04;
@@ -73,10 +65,10 @@
   --hand-title: oklch(0.72 calc(var(--felt-c) * 1.2) var(--felt-h));
   --hand-total: oklch(0.94 0.010 72);
   --hand-empty: oklch(0.72 calc(var(--felt-c) * 0.8) var(--felt-h) / 0.72);
-  --panel-bg: oklch(0.18 0.012 52);
+  --panel-bg: oklch(0.18 calc(var(--felt-c) * 0.5) var(--felt-h));
   --panel-text: oklch(0.88 0.010 70);
   --panel-muted: oklch(0.60 0.008 60);
-  --top-pill-bg: oklch(0.22 0.012 52);
+  --top-pill-bg: oklch(0.22 calc(var(--felt-c) * 0.45) var(--felt-h));
   --top-pill-alt-bg: oklch(0.28 0.010 55);
   --status-panel-bg: oklch(0.20 0.012 52);
   --status-panel-text: oklch(0.90 0.010 70);
