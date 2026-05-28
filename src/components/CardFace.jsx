@@ -101,7 +101,7 @@ function CardFace({ card, hidden = false, reveal = false, index = 0 }) {
 
   return (
     <MotionDiv
-      initial={reduceMotion ? false : { opacity: 0, y: -56, scale: 0.85, rotate: index % 2 === 0 ? -9 : 9 }}
+      initial={reduceMotion ? false : { opacity: 0, y: -44, scale: 0.88, rotate: index % 2 === 0 ? -8 : 8 }}
       animate={{
         opacity: 1,
         y: 0,
@@ -109,13 +109,12 @@ function CardFace({ card, hidden = false, reveal = false, index = 0 }) {
         rotate: 0,
         transition: reduceMotion
           ? { duration: 0 }
-          : { type: "spring", stiffness: 460, damping: 24, mass: 0.42, delay: index * 0.05 },
+          : { type: "spring", stiffness: 600, damping: 26, mass: 0.28, delay: index * 0.028 },
       }}
       exit={{
         opacity: 0,
-        scale: 0.92,
-        // Fast exit, no stagger — all cards leave simultaneously
-        transition: { duration: reduceMotion ? 0 : 0.10 },
+        scale: 0.94,
+        transition: { duration: reduceMotion ? 0 : 0.07 },
       }}
       className="relative shrink-0"
       style={{ width: "var(--card-w)", height: "var(--card-h)" }}
@@ -128,7 +127,7 @@ function CardFace({ card, hidden = false, reveal = false, index = 0 }) {
             key="back"
             initial={reduceMotion ? false : { scaleX: 0, opacity: 0 }}
             animate={{ scaleX: 1, opacity: 1 }}
-            exit={reduceMotion ? { opacity: 0 } : { scaleX: 0, opacity: 0, transition: { duration: 0.10, ease: "easeIn" } }}
+            exit={reduceMotion ? { opacity: 0 } : { scaleX: 0, opacity: 0, transition: { duration: 0.07, ease: "easeIn" } }}
             transition={{ duration: reduceMotion ? 0 : 0.12, ease: "easeOut" }}
             style={{ position: "absolute", inset: 0 }}
           >
@@ -139,7 +138,7 @@ function CardFace({ card, hidden = false, reveal = false, index = 0 }) {
             key="front"
             initial={reduceMotion ? false : { scaleX: 0, opacity: 0 }}
             animate={{ scaleX: 1, opacity: 1 }}
-            transition={{ duration: reduceMotion ? 0 : 0.12, ease: "easeOut" }}
+            transition={{ duration: reduceMotion ? 0 : 0.09, ease: "easeOut" }}
             className={`v21-card ${isRed ? "red" : ""}`}
             style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}
           >

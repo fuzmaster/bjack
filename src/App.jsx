@@ -432,7 +432,7 @@ export default function App() {
         console.error("Dealer draw step failed", error);
         endRound("ERROR — RESET GAME", 0);
       }
-    }, gameSpeed === "fast" ? 70 : 280);
+    }, gameSpeed === "fast" ? 45 : 140);
 
     return () => {
       if (dealerStepTimeoutRef.current) clearTimeout(dealerStepTimeoutRef.current);
@@ -443,7 +443,7 @@ export default function App() {
   useEffect(() => {
     if (state.gameState !== "dealer-turn") { setDealerRevealHeld(false); return; }
     setDealerRevealHeld(true);
-    const t = setTimeout(() => setDealerRevealHeld(false), 650);
+    const t = setTimeout(() => setDealerRevealHeld(false), 280);
     return () => clearTimeout(t);
   }, [state.gameState]);
 
@@ -627,9 +627,9 @@ export default function App() {
           <div className="table-surface-shell mx-auto w-full max-w-2xl">
             <MotionDiv
               key={state.roundId}
-              initial={reduceMotion ? false : { scale: 0.985, opacity: 0.9 }}
-              animate={reduceMotion ? { scale: 1, opacity: 1 } : { scale: [0.99, 1.015, 1], opacity: [0.9, 1, 1] }}
-              transition={{ duration: reduceMotion ? 0 : 0.22, ease: "easeOut" }}
+              initial={reduceMotion ? false : { scale: 0.97, opacity: 0.85 }}
+              animate={reduceMotion ? { scale: 1, opacity: 1 } : { scale: [0.98, 1.01, 1], opacity: [0.85, 1, 1] }}
+              transition={{ duration: reduceMotion ? 0 : 0.12, ease: "easeOut" }}
             >
               <HandZone
                 title="Player"

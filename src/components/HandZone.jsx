@@ -91,8 +91,8 @@ export default function HandZone({
 
   // Shake on loss, settle on win/null
   const shakeVariants = {
-    loss: { x: [0, -8, 8, -6, 6, -4, 4, -2, 2, 0], transition: { duration: 0.55, ease: "easeOut" } },
-    win:  { x: 0, transition: { duration: 0.2 } },
+    loss: { x: [0, -7, 7, -5, 5, -2, 2, 0], transition: { duration: 0.25, ease: "easeOut" } },
+    win:  { x: 0, transition: { duration: 0.12 } },
     idle: { x: 0 },
   };
 
@@ -120,7 +120,7 @@ export default function HandZone({
               className="numeric-tabular leading-none"
               initial={{ scale: 1.35, opacity: 0.6 }}
               animate={{ scale: 1, opacity: 1 }}
-              transition={{ type: "spring", stiffness: 500, damping: 22, mass: 0.4 }}
+              transition={{ type: "spring", stiffness: 700, damping: 28, mass: 0.22 }}
               style={{
                 fontSize: "clamp(1.8rem, 7vw, 2.8rem)",
                 color: "var(--hand-total)",
