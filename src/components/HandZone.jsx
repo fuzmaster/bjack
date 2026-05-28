@@ -1,4 +1,4 @@
-import { AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import CardFace from "./CardFace";
 
 function HandGroup({
@@ -82,17 +82,26 @@ export default function HandZone({
   hiddenSecond = false,
   revealHidden = false,
   meta = null,
-  result = null,   // "win" | "loss" | null — drives edge glow via CSS
+  result = null,   // "win" | "loss" | null
 }) {
   const resolvedHands = hands ?? [hand ?? []];
   const resolvedTotals = handTotals ?? [total];
   const isSplitView = resolvedHands.length > 1;
 
+  // Shake on loss, settle on win/null
+  const shakeVariants = {
+    loss: { x: [0, -8, 8, -6, 6, -4, 4, -2, 2, 0], transition: { duration: 0.55, ease: "easeOut" } },
+    win:  { x: 0, transition: { duration: 0.2 } },
+    idle: { x: 0 },
+  };
+
   return (
-    <section
+    <motion.section
       className="v21-hand-zone mx-auto w-full max-w-[44rem] px-2 py-2 sm:px-3 sm:py-3"
       aria-label={`${title} hand`}
       data-result={result ?? undefined}
+      animate={result === "loss" ? "loss" : result === "win" ? "win" : "idle"}
+      variants={shakeVariants}
     >
       <div className="mb-1.5 flex items-start justify-between gap-3">
         <div className="min-w-0">
@@ -102,18 +111,26 @@ export default function HandZone({
           >
             {title}
           </div>
-          <div
-            className="numeric-tabular leading-none"
-            style={{
-              fontSize: "clamp(1.8rem, 7vw, 2.8rem)",
-              color: "var(--hand-total)",
-              fontFamily: "var(--font-display)",
-              fontStyle: "italic",
-              fontWeight: 500,
-            }}
-          >
-            {total}
-          </div>
+          {/* Score pops when value changes */}
+          <AnimatePresence mode="popLayout" initial={false}>
+            <motion.div
+              key={total}
+              className="numeric-tabular leading-none"
+              initial={{ scale: 1.35, opacity: 0.6 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ type: "spring", stiffness: 500, damping: 22, mass: 0.4 }}
+              style={{
+                fontSize: "clamp(1.8rem, 7vw, 2.8rem)",
+                color: "var(--hand-total)",
+                fontFamily: "var(--font-display)",
+                fontStyle: "italic",
+                fontWeight: 500,
+                display: "inline-block",
+              }}
+            >
+              {total}
+            </motion.div>
+          </AnimatePresence>
         </div>
         {meta ? <div className="flex shrink-0 items-start">{meta}</div> : null}
       </div>
@@ -131,6 +148,6 @@ export default function HandZone({
           />
         ))}
       </div>
-    </section>
+    </motion.section>
   );
 }

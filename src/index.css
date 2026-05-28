@@ -411,46 +411,57 @@ h3,
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
-   V21 Hand Zone Feedback — edge glow
+   V21 Hand Zone Feedback — edge glow + win flash + loss shake
    ───────────────────────────────────────────────────────────────────────────── */
 .v21-hand-zone {
-  transition: box-shadow 280ms ease;
+  transition: box-shadow 320ms ease;
   border-radius: 8px;
 }
 
 .v21-hand-zone[data-result="win"] {
   box-shadow:
     0 0 0 2px var(--glow-win),
-    0 0 28px 6px oklch(0.78 0.12 78 / 0.20);
-  animation: v21-glow-pulse 2s ease-in-out;
+    0 0 48px 14px oklch(0.78 0.12 78 / 0.28);
+  animation: v21-win-flash 0.75s ease-out;
 }
 
 .v21-hand-zone[data-result="loss"] {
   box-shadow:
     0 0 0 2px var(--glow-loss),
-    0 0 22px 4px oklch(0.48 0.13 22 / 0.16);
+    0 0 32px 8px oklch(0.48 0.13 22 / 0.22);
 }
 
-@keyframes v21-glow-pulse {
-  0% {
-    box-shadow: 0 0 0 2px var(--glow-win), 0 0 28px 6px oklch(0.78 0.12 78 / 0.20);
-  }
-  45% {
-    box-shadow: 0 0 0 3px var(--glow-win), 0 0 48px 12px oklch(0.78 0.12 78 / 0.32);
-  }
-  100% {
-    box-shadow: 0 0 0 2px var(--glow-win), 0 0 28px 6px oklch(0.78 0.12 78 / 0.20);
-  }
+@keyframes v21-win-flash {
+  0%   { box-shadow: 0 0 0 0 transparent; filter: brightness(1); }
+  18%  { box-shadow: 0 0 0 8px oklch(0.78 0.12 78 / 0.90), 0 0 80px 28px oklch(0.78 0.12 78 / 0.48); filter: brightness(1.22); }
+  55%  { box-shadow: 0 0 0 3px var(--glow-win), 0 0 52px 16px oklch(0.78 0.12 78 / 0.30); filter: brightness(1.08); }
+  100% { box-shadow: 0 0 0 2px var(--glow-win), 0 0 48px 14px oklch(0.78 0.12 78 / 0.28); filter: brightness(1); }
 }
 
-/* Table breath on loss — subtle darkening pulse */
+/* Table breath on loss — deeper pulse */
 @keyframes v21-table-breath {
   0%, 100% { filter: brightness(1); }
-  40% { filter: brightness(0.84); }
+  35% { filter: brightness(0.78) saturate(1.2); }
 }
 
 .v21-table-breath {
-  animation: v21-table-breath 0.72s ease-in-out;
+  animation: v21-table-breath 0.65s ease-in-out;
+}
+
+/* Hot streak badge pulse */
+@keyframes v21-streak-pulse {
+  0%, 100% { box-shadow: 0 0 0 2px oklch(0.78 0.12 78 / 0.55); }
+  50% { box-shadow: 0 0 0 4px oklch(0.78 0.12 78 / 0.90), 0 0 14px 4px oklch(0.78 0.12 78 / 0.35); }
+}
+
+/* Deal button attention pulse */
+@keyframes v21-deal-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 oklch(0.82 0.10 78 / 0); }
+  50% { box-shadow: 0 0 0 6px oklch(0.82 0.10 78 / 0.30), 0 0 24px 8px oklch(0.82 0.10 78 / 0.14); }
+}
+
+.v21-btn.tone-deal {
+  animation: v21-deal-pulse 2s ease-in-out infinite;
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
@@ -630,6 +641,17 @@ h3,
 
 @media (hover: hover) {
   .chip-button:not([data-active]):hover {
-    transform: translateY(-2px);
+    transform: translateY(-3px) scale(1.06);
+    box-shadow: 0 6px 16px oklch(0 0 0 / 0.30);
   }
+}
+
+.chip-button:active {
+  transform: translateY(2px) scale(0.90) !important;
+  transition-duration: 55ms !important;
+}
+
+/* Surface pill accent — hot streak */
+.surface-pill-streak-hot {
+  animation: v21-streak-pulse 1.4s ease-in-out infinite;
 }

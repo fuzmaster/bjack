@@ -101,14 +101,15 @@ function CardFace({ card, hidden = false, reveal = false, index = 0 }) {
 
   return (
     <MotionDiv
-      initial={reduceMotion ? false : { opacity: 0, y: -36, scale: 0.94 }}
+      initial={reduceMotion ? false : { opacity: 0, y: -56, scale: 0.85, rotate: index % 2 === 0 ? -9 : 9 }}
       animate={{
         opacity: 1,
         y: 0,
         scale: 1,
+        rotate: 0,
         transition: reduceMotion
           ? { duration: 0 }
-          : { type: "spring", stiffness: 380, damping: 30, mass: 0.6, delay: index * 0.04 },
+          : { type: "spring", stiffness: 460, damping: 24, mass: 0.42, delay: index * 0.05 },
       }}
       exit={{
         opacity: 0,

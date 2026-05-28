@@ -464,8 +464,7 @@ export default function App() {
     <div className="flex flex-wrap items-center justify-end gap-2 text-right">
       {state.winStreak >= 1 && (
         <div
-          className={`surface-pill${activeMultiplier > 1 ? " surface-pill-accent" : ""}`}
-          style={activeMultiplier > 1 ? { boxShadow: "0 0 0 2px var(--status-win-glow)" } : {}}
+          className={`surface-pill${activeMultiplier > 1 ? " surface-pill-accent" : ""}${state.winStreak >= 3 ? " surface-pill-streak-hot" : ""}`}
           title={activeMultiplier > 1 ? `Win streak bonus: ×${activeMultiplier} payout` : `${state.winStreak} consecutive win${state.winStreak > 1 ? "s" : ""}`}
         >
           <span className="text-[0.65rem] font-black uppercase tracking-[0.12em] opacity-70">Streak</span>
