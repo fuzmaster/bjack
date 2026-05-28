@@ -12,6 +12,9 @@ import { useAchievements } from "./hooks/useAchievements";
 import { CHIP_VALUES, createDeck, DIFFICULTY_PRESETS, getStreakMultiplier, handValue, RESHUFFLE_THRESHOLD, resolveRound } from "./game/blackjack";
 import { createInitialGameState, gameReducer, initialGameState } from "./game/reducer";
 import { useGameAudio } from "./hooks/useGameAudio";
+import { useSwipeGestures } from "./hooks/useSwipeGestures";
+
+const vibrate = (pattern) => { try { navigator?.vibrate?.(pattern); } catch {} };
 import { getStoredBankroll, setStoredBankroll, getStoredDifficulty, setStoredDifficulty, getStoredMuted, setStoredMuted, getStoredGameSpeed, setStoredGameSpeed, getStoredSessionStats, setStoredSessionStats } from "./utils/storage";
 import { formatCurrency } from "./utils/formatters";
 
@@ -43,6 +46,7 @@ export default function App() {
   const [gameSpeed, setGameSpeed] = useState(() => getStoredGameSpeed());
   const [isStatsModalOpen, setIsStatsModalOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [dealerRevealHeld, setDealerRevealHeld] = useState(false);
   const { play, unlockAudio } = useGameAudio(isMuted);
   const { theme, setTheme, themeOptions } = useTheme();
   const { current: currentAchievement, unlock, dismiss: dismissAchievement } = useAchievements();
@@ -80,8 +84,8 @@ export default function App() {
       },
     });
 
-    if (delta > 0) play("win", 0.4);
-    else if (delta < 0) play("lose", 0.42);
+    if (delta > 0) { play("win", 0.4); vibrate([40, 60, 40]); }
+    else if (delta < 0) { play("lose", 0.42); vibrate(80); }
     else play("flip", 0.25);
   }, [play]);
 
@@ -97,6 +101,7 @@ export default function App() {
 
     dispatch({ type: "DEAL_ROUND", payload: { roundId, newDeck } });
     play("deal", 0.34);
+    vibrate(28);
   }, [play, state.bankroll, state.bet, state.deck, state.gameState, unlockAudio]);
 
   const hit = useCallback(() => {
@@ -434,6 +439,14 @@ export default function App() {
     };
   }, [endRound, gameSpeed, play, state.dealerHand, state.deck, state.gameState, state.handBets, state.handOutcomes, state.playerHands, state.roundId]);
 
+  // Dealer reveal hold — 650ms shimmer pause before hole card flips
+  useEffect(() => {
+    if (state.gameState !== "dealer-turn") { setDealerRevealHeld(false); return; }
+    setDealerRevealHeld(true);
+    const t = setTimeout(() => setDealerRevealHeld(false), 650);
+    return () => clearTimeout(t);
+  }, [state.gameState]);
+
   const dealDisabled = state.bet > state.bankroll || state.bankroll <= 0;
 
   const canDouble =
@@ -447,6 +460,35 @@ export default function App() {
     activePlayerHand.length === 2 &&
     splitRankValue(activePlayerHand[0].rank) === splitRankValue(activePlayerHand[1].rank) &&
     state.bankroll >= activeHandBet;
+
+  // Keyboard shortcuts: H=Hit S=Stand D=Double Space=Deal/Next
+  useEffect(() => {
+    const handleKey = (e) => {
+      if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA" || e.metaKey || e.ctrlKey) return;
+      const gs = state.gameState;
+      switch (e.key.toLowerCase()) {
+        case "h": if (gs === "player-turn") { e.preventDefault(); hit(); } break;
+        case "s": if (gs === "player-turn") { e.preventDefault(); stand(); } break;
+        case "d": if (gs === "player-turn" && canDouble) { e.preventDefault(); doubleDown(); } break;
+        case " ":
+          e.preventDefault();
+          if (gs === "ready" && !dealDisabled) startNewRound();
+          else if (gs === "round-over") nextRound();
+          break;
+        default: break;
+      }
+    };
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [state.gameState, hit, stand, doubleDown, startNewRound, nextRound, canDouble, dealDisabled]);
+
+  // Touch swipe gestures: ↑ Hit  ← Stand  → Double
+  useSwipeGestures({
+    enabled: state.gameState === "player-turn",
+    onHit: hit,
+    onStand: stand,
+    onDouble: canDouble ? doubleDown : undefined,
+  });
 
   // Derive round result for HandZone edge glow
   const isRoundOver = state.gameState === "round-over";
@@ -569,10 +611,11 @@ export default function App() {
           <div className="table-surface-shell mx-auto w-full max-w-2xl">
             <HandZone
               title="Dealer"
-              total={state.dealerRevealed ? dealerTotal : state.dealerHand.length ? `${dealerShownTotal}+` : "--"}
+              total={(state.dealerRevealed && !dealerRevealHeld) ? dealerTotal : state.dealerHand.length ? `${dealerShownTotal}+` : "--"}
               hand={state.dealerHand}
-              hiddenSecond={!state.dealerRevealed}
-              revealHidden={state.dealerRevealed}
+              hiddenSecond={!state.dealerRevealed || dealerRevealHeld}
+              revealHidden={state.dealerRevealed && !dealerRevealHeld}
+              thinking={dealerRevealHeld}
             />
           </div>
         </div>

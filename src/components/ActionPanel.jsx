@@ -104,6 +104,7 @@ export default function ActionPanel({
               tone="hit"
               onClick={onHit}
               className={`${btnHeight}`}
+              title="Hit (H / swipe up)"
             >
               Hit
             </UIButton>
@@ -111,6 +112,7 @@ export default function ActionPanel({
               tone="stand"
               onClick={onStand}
               className={`${btnHeight}`}
+              title="Stand (S / swipe left)"
             >
               Stand
             </UIButton>
@@ -119,6 +121,7 @@ export default function ActionPanel({
                 tone="double"
                 onClick={onDouble}
                 className={`col-span-2 ${btnHeight}`}
+                title="Double Down (D / swipe right)"
               >
                 Double Down
               </UIButton>

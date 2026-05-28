@@ -83,6 +83,7 @@ export default function HandZone({
   revealHidden = false,
   meta = null,
   result = null,   // "win" | "loss" | null
+  thinking = false, // dealer is about to reveal hole card
 }) {
   const resolvedHands = hands ?? [hand ?? []];
   const resolvedTotals = handTotals ?? [total];
@@ -100,6 +101,7 @@ export default function HandZone({
       className="v21-hand-zone mx-auto w-full max-w-[44rem] px-2 py-2 sm:px-3 sm:py-3"
       aria-label={`${title} hand`}
       data-result={result ?? undefined}
+      data-thinking={thinking || undefined}
       animate={result === "loss" ? "loss" : result === "win" ? "win" : "idle"}
       variants={shakeVariants}
     >

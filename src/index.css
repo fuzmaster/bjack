@@ -448,6 +448,16 @@ h3,
   animation: v21-table-breath 0.65s ease-in-out;
 }
 
+/* Dealer thinking shimmer — card back pulses while hole card is held */
+@keyframes v21-card-shimmer {
+  0%, 100% { opacity: 1; filter: brightness(1); }
+  50% { opacity: 0.72; filter: brightness(1.45) saturate(0.55); }
+}
+
+[data-thinking] .v21-card-back {
+  animation: v21-card-shimmer 0.75s ease-in-out infinite;
+}
+
 /* Hot streak badge pulse */
 @keyframes v21-streak-pulse {
   0%, 100% { box-shadow: 0 0 0 2px oklch(0.78 0.12 78 / 0.55); }
