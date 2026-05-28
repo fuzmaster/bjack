@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { getSuitName, isRedSuit } from "../game/blackjack";
 import SuitIcon from "./SuitIcon";
@@ -91,7 +92,7 @@ function CardBack() {
   );
 }
 
-export default function CardFace({ card, hidden = false, reveal = false, index = 0 }) {
+function CardFace({ card, hidden = false, reveal = false, index = 0 }) {
   const reduceMotion = useReducedMotion();
   const isRed = isRedSuit(card.suit);
   const suitName = getSuitName(card.suit);
@@ -171,3 +172,10 @@ export default function CardFace({ card, hidden = false, reveal = false, index =
     </MotionDiv>
   );
 }
+
+export default memo(CardFace, (prev, next) =>
+  prev.card === next.card &&
+  prev.hidden === next.hidden &&
+  prev.reveal === next.reveal &&
+  prev.index === next.index
+);

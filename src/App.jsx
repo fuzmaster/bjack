@@ -1,11 +1,12 @@
-import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import confetti from "canvas-confetti";
+import { ChevronDown, ChevronUp } from "lucide-react";
 import TopBar from "./components/TopBar";
 import BetControls from "./components/BetControls";
 import ActionPanel from "./components/ActionPanel";
 import HandZone from "./components/HandZone";
-import StatsModal from "./components/StatsModal";
+const StatsModal = lazy(() => import("./components/StatsModal"));
 import { useTheme } from "./context/useTheme";
 import { useAchievements } from "./hooks/useAchievements";
 import { CHIP_VALUES, createDeck, DIFFICULTY_PRESETS, getStreakMultiplier, handValue, RESHUFFLE_THRESHOLD, resolveRound } from "./game/blackjack";
@@ -41,7 +42,7 @@ export default function App() {
   const [isMuted, setIsMuted] = useState(() => getStoredMuted());
   const [gameSpeed, setGameSpeed] = useState(() => getStoredGameSpeed());
   const [isStatsModalOpen, setIsStatsModalOpen] = useState(false);
-  const [isControlWindowOpen, setIsControlWindowOpen] = useState(true);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const { play, unlockAudio } = useGameAudio(isMuted);
   const { theme, setTheme, themeOptions } = useTheme();
   const { current: currentAchievement, unlock, dismiss: dismissAchievement } = useAchievements();
@@ -494,22 +495,39 @@ export default function App() {
   );
 
   return (
-    <div className="app-shell flex h-[100dvh] w-full flex-col overflow-hidden bg-[var(--page-bg)] text-[var(--page-text)] lg:flex-row">
+    <div className="app-shell flex h-[100dvh] w-full flex-col overflow-hidden bg-[var(--page-bg)] text-[var(--page-text)]">
+      {/* Fixed overlay layers */}
       <div className="pointer-events-none fixed inset-0" style={{ background: "var(--page-gradient)" }} aria-hidden="true" />
       <div className="neo-noise-overlay pointer-events-none fixed inset-0" aria-hidden="true" />
       <div className="pointer-events-none fixed inset-x-0 top-0 h-64" style={{ background: "var(--ambient-glow-top)" }} aria-hidden="true" />
       <div className="pointer-events-none fixed inset-x-0 bottom-0 h-48" style={{ background: "var(--ambient-floor-gradient)" }} aria-hidden="true" />
 
-      {/* LAYOUT WRAPPER: Column on mobile, row on large screens */}
-      <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
-        {/* LEFT COLUMN: Top info + Game table */}
-        <div className="flex min-h-0 flex-1 flex-col">
-          {/* TOP STRIP: slim always-visible bar */}
-          <header
-            className="shrink-0 px-3 py-1.5 sm:px-4"
-            style={{ borderBottom: "1px solid oklch(0.82 0.10 78 / 0.10)" }}
-            aria-label="Table information"
+      {/* SETTINGS STRIP — collapsed by default */}
+      <header
+        className="relative z-10 shrink-0"
+        style={{ borderBottom: "1px solid oklch(0.82 0.10 78 / 0.10)" }}
+        aria-label="Settings"
+      >
+        <button
+          type="button"
+          onClick={() => setIsSettingsOpen((prev) => !prev)}
+          className="flex w-full items-center justify-between px-3 py-1.5 sm:px-4"
+          aria-expanded={isSettingsOpen}
+          aria-controls="settings-panel"
+        >
+          <span
+            className="text-[0.62rem] font-bold uppercase tracking-[0.12em]"
+            style={{ color: "var(--panel-text)", fontFamily: "var(--font-sans)" }}
           >
+            Adjust Settings
+          </span>
+          {isSettingsOpen
+            ? <ChevronUp className="h-3.5 w-3.5" style={{ color: "var(--panel-text)" }} />
+            : <ChevronDown className="h-3.5 w-3.5" style={{ color: "var(--panel-text)" }} />}
+        </button>
+
+        {isSettingsOpen && (
+          <div id="settings-panel" className="px-3 pb-2 sm:px-4">
             <TopBar
               bankroll={state.bankroll}
               bet={state.bet}
@@ -526,137 +544,118 @@ export default function App() {
               onOpenStats={openStatsModal}
               compact
             />
-          </header>
+          </div>
+        )}
+      </header>
 
-          {/* MIDDLE: Game Table */}
-          <main
-            className={`v21-felt relative flex min-h-0 flex-1 flex-col justify-between overflow-y-auto${roundResult === "loss" && !reduceMotion ? " v21-table-breath" : ""}`}
-            aria-label="Blackjack table"
-          >
-            {/* Table arc lines — dealer curve + betting circle */}
-            <svg
-              className="v21-arcs"
-              viewBox="0 0 600 380"
-              preserveAspectRatio="none"
-              aria-hidden="true"
+      {/* GAME TABLE — fills all remaining vertical space */}
+      <main
+        className={`v21-felt relative z-0 flex min-h-0 flex-1 flex-col justify-between overflow-hidden${roundResult === "loss" && !reduceMotion ? " v21-table-breath" : ""}`}
+        aria-label="Blackjack table"
+      >
+        {/* Table arc lines */}
+        <svg className="v21-arcs" viewBox="0 0 600 380" preserveAspectRatio="none" aria-hidden="true">
+          <path d="M 20 95 Q 300 -15 580 95" />
+          <path className="v21-arc-thin" d="M 20 107 Q 300 -2 580 107" />
+          <ellipse cx="300" cy="292" rx="118" ry="34" />
+          <ellipse className="v21-arc-thin" cx="300" cy="292" rx="130" ry="41" />
+          <text x="300" y="60" textAnchor="middle">BLACKJACK · PAYS 3 TO 2</text>
+          <text x="300" y="75" textAnchor="middle" style={{ fontSize: "6px", letterSpacing: "0.28em" }}>
+            DEALER MUST DRAW TO 16 · STAND ON ALL 17S
+          </text>
+        </svg>
+
+        {/* Dealer zone */}
+        <div className="shrink-0 px-1.5 py-1.5 sm:px-2 sm:py-2">
+          <div className="table-surface-shell mx-auto w-full max-w-2xl">
+            <HandZone
+              title="Dealer"
+              total={state.dealerRevealed ? dealerTotal : state.dealerHand.length ? `${dealerShownTotal}+` : "--"}
+              hand={state.dealerHand}
+              hiddenSecond={!state.dealerRevealed}
+              revealHidden={state.dealerRevealed}
+            />
+          </div>
+        </div>
+
+        <div className="my-auto" />
+
+        {/* Player zone */}
+        <div className="shrink-0 px-1.5 py-1.5 sm:px-2 sm:py-2">
+          <div className="table-surface-shell mx-auto w-full max-w-2xl">
+            <MotionDiv
+              key={state.roundId}
+              initial={reduceMotion ? false : { scale: 0.985, opacity: 0.9 }}
+              animate={reduceMotion ? { scale: 1, opacity: 1 } : { scale: [0.99, 1.015, 1], opacity: [0.9, 1, 1] }}
+              transition={{ duration: reduceMotion ? 0 : 0.22, ease: "easeOut" }}
             >
-              <path d="M 20 95 Q 300 -15 580 95" />
-              <path className="v21-arc-thin" d="M 20 107 Q 300 -2 580 107" />
-              <ellipse cx="300" cy="292" rx="118" ry="34" />
-              <ellipse className="v21-arc-thin" cx="300" cy="292" rx="130" ry="41" />
-              <text x="300" y="60" textAnchor="middle">BLACKJACK · PAYS 3 TO 2</text>
-              <text x="300" y="75" textAnchor="middle" style={{ fontSize: "6px", letterSpacing: "0.28em" }}>
-                DEALER MUST DRAW TO 16 · STAND ON ALL 17S
-              </text>
-            </svg>
-            {/* Dealer zone: pin to top */}
-            <div className="shrink-0 px-1.5 py-1.5 sm:px-2 sm:py-2">
-              <div className="table-surface-shell mx-auto w-full max-w-2xl">
-                <HandZone
-                  title="Dealer"
-                  total={state.dealerRevealed ? dealerTotal : state.dealerHand.length ? `${dealerShownTotal}+` : "--"}
-                  hand={state.dealerHand}
-                  hiddenSecond={!state.dealerRevealed}
-                  revealHidden={state.dealerRevealed}
-                />
-              </div>
-            </div>
+              <HandZone
+                title="Player"
+                total={activePlayerHand.length ? activePlayerTotal : "--"}
+                hands={state.playerHands}
+                handTotals={playerTotals.map((value, idx) => (state.playerHands[idx].length ? value : "--"))}
+                activeHandIndex={state.activeHandIndex}
+                result={roundResult}
+                meta={playerMeta}
+              />
+            </MotionDiv>
+          </div>
+        </div>
+      </main>
 
-            {/* Center: grows and centers */}
-            <div className="my-auto" />
-
-            {/* Player zone: pin to bottom */}
-            <div className="shrink-0 px-1.5 py-1.5 sm:px-2 sm:py-2">
-              <div className="table-surface-shell mx-auto w-full max-w-2xl">
-                <MotionDiv
-                  key={state.roundId}
-                  initial={reduceMotion ? false : { scale: 0.985, opacity: 0.9 }}
-                  animate={reduceMotion ? { scale: 1, opacity: 1 } : { scale: [0.99, 1.015, 1], opacity: [0.9, 1, 1] }}
-                  transition={{ duration: reduceMotion ? 0 : 0.22, ease: "easeOut" }}
-                >
-                  <HandZone
-                    title="Player"
-                    total={activePlayerHand.length ? activePlayerTotal : "--"}
-                    hands={state.playerHands}
-                    handTotals={playerTotals.map((value, idx) => (state.playerHands[idx].length ? value : "--"))}
-                    activeHandIndex={state.activeHandIndex}
-                    result={roundResult}
-                    meta={playerMeta}
-                  />
-                </MotionDiv>
-              </div>
-            </div>
-          </main>
+      {/* BOTTOM CONTROLS — BetControls + ActionPanel side by side, always visible */}
+      <div
+        className="relative z-10 flex shrink-0"
+        style={{ borderTop: "1px solid oklch(0.82 0.10 78 / 0.10)" }}
+        aria-label="Game controls"
+      >
+        <div className="min-w-0 flex-1">
+          <BetControls
+            bet={state.bet}
+            chipValues={CHIP_VALUES}
+            selectedChip={state.selectedChip}
+            onSelectChip={selectChip}
+            onIncreaseBet={increaseBet}
+            onDecreaseBet={decreaseBet}
+            disabled={isGameActive}
+            compact
+          />
+        </div>
+        <div className="w-px shrink-0" style={{ background: "oklch(0.82 0.10 78 / 0.10)" }} />
+        <div className="min-w-0 flex-1">
+          <ActionPanel
+            gameState={state.gameState}
+            onDeal={startNewRound}
+            onNext={nextRound}
+            onHit={hit}
+            onStand={stand}
+            onDouble={doubleDown}
+            onSplit={splitHand}
+            onRescue={rescueFunds}
+            onTakeInsurance={takeInsurance}
+            onDeclineInsurance={declineInsurance}
+            insuranceCost={Math.floor((state.handBets?.[0] ?? state.bet) / 2)}
+            canDouble={canDouble}
+            canSplit={canSplit}
+            dealDisabled={dealDisabled}
+            bankroll={state.bankroll}
+            bet={state.bet}
+            compact
+          />
         </div>
       </div>
 
-      {/* BOTTOM/RIGHT WINDOW: Controls (sidebar on lg, footer on mobile) */}
-      <aside
-        className="z-50 flex shrink-0 flex-col bg-[var(--page-bg)] px-2 py-1 sm:px-3 sm:py-1.5 lg:h-full lg:w-96"
-        style={{ borderTop: "1px solid oklch(0.82 0.10 78 / 0.10)", }}
-        aria-label="Game controls"
-      >
-        <button
-          type="button"
-          onClick={() => setIsControlWindowOpen((prev) => !prev)}
-          className="surface-stat flex w-full items-center justify-between px-2 py-1 text-left"
-          aria-expanded={isControlWindowOpen}
-          aria-controls="control-window-panel"
-        >
-          <span
-            className="text-[0.62rem] font-bold uppercase tracking-[0.12em]"
-            style={{ color: "var(--panel-text)", fontFamily: "var(--font-sans)" }}
-          >
-            CURRENT BET + NEXT HAND
-          </span>
-          {isControlWindowOpen ? <ChevronUp className="h-3.5 w-3.5" style={{ color: "var(--panel-text)" }} /> : <ChevronDown className="h-3.5 w-3.5" style={{ color: "var(--panel-text)" }} />}
-        </button>
-
-        {isControlWindowOpen && (
-          <div id="control-window-panel" className="control-rail mt-1 flex w-full flex-col gap-1.5 px-0.5 lg:flex-1 lg:overflow-y-auto">
-            <BetControls
-              bet={state.bet}
-              chipValues={CHIP_VALUES}
-              selectedChip={state.selectedChip}
-              onSelectChip={selectChip}
-              onIncreaseBet={increaseBet}
-              onDecreaseBet={decreaseBet}
-              disabled={isGameActive}
-              compact
-            />
-
-            <ActionPanel
-              gameState={state.gameState}
-              onDeal={startNewRound}
-              onNext={nextRound}
-              onHit={hit}
-              onStand={stand}
-              onDouble={doubleDown}
-              onSplit={splitHand}
-              onRescue={rescueFunds}
-              onTakeInsurance={takeInsurance}
-              onDeclineInsurance={declineInsurance}
-              insuranceCost={Math.floor((state.handBets?.[0] ?? state.bet) / 2)}
-              canDouble={canDouble}
-              canSplit={canSplit}
-              dealDisabled={dealDisabled}
-              bankroll={state.bankroll}
-              bet={state.bet}
-              compact
-            />
-          </div>
-        )}
-      </aside>
-
-      <StatsModal
-        isOpen={isStatsModalOpen}
-        onClose={closeStatsModal}
-        handsWon={state.handsWon}
-        handsLost={state.handsLost}
-        handsPushed={state.handsPushed}
-        highestBankroll={state.highestBankroll}
-        currentBankroll={state.bankroll}
-      />
+      <Suspense>
+        <StatsModal
+          isOpen={isStatsModalOpen}
+          onClose={closeStatsModal}
+          handsWon={state.handsWon}
+          handsLost={state.handsLost}
+          handsPushed={state.handsPushed}
+          highestBankroll={state.highestBankroll}
+          currentBankroll={state.bankroll}
+        />
+      </Suspense>
     </div>
   );
 }
