@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef } from "react";
 
-export function useGameAudio() {
+export function useGameAudio(isMuted = false) {
   const audioRef = useRef({});
   const unlockedRef = useRef(false);
   const volumeMapRef = useRef({});
@@ -67,6 +67,8 @@ export function useGameAudio() {
   }, []);
 
   const play = useCallback((name, volume = 0.4) => {
+    if (isMuted) return;
+
     const sound = audioRef.current[name];
     if (!sound) return;
 
@@ -85,7 +87,7 @@ export function useGameAudio() {
     } catch (error) {
       console.error(`Audio setup failed for ${name}`, error);
     }
-  }, []);
+  }, [isMuted]);
 
   return { play, unlockAudio };
 }

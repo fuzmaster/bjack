@@ -3,6 +3,9 @@ import { isDifficultyKey } from "../game/blackjack";
 
 const THEME_KEY = "blackjack-theme";
 const BANKROLL_KEY = "blackjack-bankroll";
+const DIFFICULTY_KEY = "blackjack-difficulty";
+const MUTED_KEY = "blackjack-muted";
+const GAME_SPEED_KEY = "blackjack-game-speed";
 
 function getStorage() {
   try {
@@ -63,8 +66,6 @@ export function setStoredBankroll(bankroll) {
   }
 }
 
-const DIFFICULTY_KEY = "blackjack-difficulty";
-
 export function getStoredDifficulty() {
   const storage = getStorage();
   if (!storage) return "medium";
@@ -81,6 +82,102 @@ export function setStoredDifficulty(difficulty) {
   if (!storage) return;
   try {
     storage.setItem(DIFFICULTY_KEY, isDifficultyKey(difficulty) ? difficulty : "medium");
+  } catch {
+    // Ignore storage write failures.
+  }
+}
+
+export function getStoredMuted() {
+  const storage = getStorage();
+  if (!storage) return false;
+  try {
+    const value = storage.getItem(MUTED_KEY);
+    return value === "true";
+  } catch {
+    return false;
+  }
+}
+
+export function setStoredMuted(isMuted) {
+  const storage = getStorage();
+  if (!storage) return;
+  try {
+    storage.setItem(MUTED_KEY, String(Boolean(isMuted)));
+  } catch {
+    // Ignore storage write failures.
+  }
+}
+
+export function getStoredGameSpeed() {
+  const storage = getStorage();
+  if (!storage) return "normal";
+  try {
+    const value = storage.getItem(GAME_SPEED_KEY);
+    return value === "fast" ? "fast" : "normal";
+  } catch {
+    return "normal";
+  }
+}
+
+export function setStoredGameSpeed(speed) {
+  const storage = getStorage();
+  if (!storage) return;
+  try {
+    storage.setItem(GAME_SPEED_KEY, speed === "fast" ? "fast" : "normal");
+  } catch {
+    // Ignore storage write failures.
+  }
+}
+
+const SESSION_STATS_KEY = "blackjack-session-stats";
+
+export function getStoredSessionStats() {
+  const storage = getStorage();
+  if (!storage) {
+    return {
+      handsWon: 0,
+      handsLost: 0,
+      handsPushed: 0,
+      highestBankroll: 500,
+    };
+  }
+  try {
+    const raw = storage.getItem(SESSION_STATS_KEY);
+    if (!raw) {
+      return {
+        handsWon: 0,
+        handsLost: 0,
+        handsPushed: 0,
+        highestBankroll: 500,
+      };
+    }
+    const parsed = JSON.parse(raw);
+    return {
+      handsWon: Number.isFinite(parsed.handsWon) ? parsed.handsWon : 0,
+      handsLost: Number.isFinite(parsed.handsLost) ? parsed.handsLost : 0,
+      handsPushed: Number.isFinite(parsed.handsPushed) ? parsed.handsPushed : 0,
+      highestBankroll: Number.isFinite(parsed.highestBankroll) ? parsed.highestBankroll : 500,
+    };
+  } catch {
+    return {
+      handsWon: 0,
+      handsLost: 0,
+      handsPushed: 0,
+      highestBankroll: 500,
+    };
+  }
+}
+
+export function setStoredSessionStats(stats) {
+  const storage = getStorage();
+  if (!storage) return;
+  try {
+    storage.setItem(SESSION_STATS_KEY, JSON.stringify({
+      handsWon: Math.max(0, stats.handsWon ?? 0),
+      handsLost: Math.max(0, stats.handsLost ?? 0),
+      handsPushed: Math.max(0, stats.handsPushed ?? 0),
+      highestBankroll: Math.max(0, stats.highestBankroll ?? 500),
+    }));
   } catch {
     // Ignore storage write failures.
   }
