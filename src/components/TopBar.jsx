@@ -1,7 +1,5 @@
 import { Coins, Crown, RefreshCcw, Volume2, VolumeX, Zap, TrendingUp } from "lucide-react";
 import { formatCurrency } from "../utils/formatters";
-import UIButton from "./UIButton";
-import StatBlock from "./StatBlock";
 import { THEMES } from "../theme/themes";
 import { DIFFICULTY_PRESETS } from "../game/blackjack";
 

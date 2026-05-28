@@ -127,6 +127,13 @@ export default function CardFace({ card, hidden = false, reveal = false, index =
         width: "var(--card-w)",
         height: "var(--card-h)",
       }}
+      exit={{
+        opacity: 0, scale: 0.9,
+        // Fast exit, no stagger — cards leave simultaneously
+        transition: { duration: reduceMotion ? 0 : 0.1 },
+      }}
+      className="relative"
+      style={{ width: "var(--card-w)", height: "var(--card-h)" }}
       role="img"
       aria-label={hidden && !reveal ? "Face-down card" : ariaLabel}
     >

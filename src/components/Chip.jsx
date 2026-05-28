@@ -21,7 +21,7 @@ export default function Chip({ value, active, onClick }) {
         fontFamily: "var(--font-sans)",
       }}
     >
-      <span className="text-sm">${value}</span>
+      <span className="text-base">${value}</span>
     </button>
   );
 }

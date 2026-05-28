@@ -8,6 +8,7 @@ import ActionPanel from "./components/ActionPanel";
 import HandZone from "./components/HandZone";
 import StatsModal from "./components/StatsModal";
 import { useTheme } from "./context/useTheme";
+import { useAchievements } from "./hooks/useAchievements";
 import { CHIP_VALUES, createDeck, DIFFICULTY_PRESETS, getStreakMultiplier, handValue, RESHUFFLE_THRESHOLD, resolveRound } from "./game/blackjack";
 import { createInitialGameState, gameReducer, initialGameState } from "./game/reducer";
 import { useGameAudio } from "./hooks/useGameAudio";
@@ -45,6 +46,7 @@ export default function App() {
   const [isControlWindowOpen, setIsControlWindowOpen] = useState(true);
   const { play, unlockAudio } = useGameAudio(isMuted);
   const { theme, setTheme, themeOptions } = useTheme();
+  const { current: currentAchievement, unlock, dismiss: dismissAchievement } = useAchievements();
   const [difficulty, setDifficulty] = useState(() => getStoredDifficulty());
   const roundTokenRef = useRef(0);
   const dealerStepTimeoutRef = useRef(null);
@@ -64,7 +66,7 @@ export default function App() {
   const dealerShownTotal = handValue(dealerVisibleHand);
   const dealerTotal = handValue(state.dealerHand);
 
-  const isGameActive = state.gameState === "player-turn" || state.gameState === "dealer-turn";
+  const isGameActive = state.gameState === "player-turn" || state.gameState === "dealer-turn" || state.gameState === "insurance";
 
   const endRound = useCallback((resultMessage, delta, outcomes = undefined) => {
     dispatch({
@@ -91,14 +93,7 @@ export default function App() {
     const needsNewDeck = state.deck.length < RESHUFFLE_THRESHOLD || state.deck.length < 4;
     const newDeck = needsNewDeck ? createDeck(roundId) : undefined;
 
-    dispatch({
-      type: "DEAL_ROUND",
-      payload: {
-        roundId,
-        newDeck,
-      },
-    });
-
+    dispatch({ type: "DEAL_ROUND", payload: { roundId, newDeck } });
     play("deal", 0.34);
   }, [play, state.bankroll, state.bet, state.deck, state.gameState, unlockAudio]);
 
@@ -111,14 +106,7 @@ export default function App() {
     const nextDeck = state.deck.slice(1);
     const nextPlayerHand = [...activePlayerHand, card];
 
-    dispatch({
-      type: "PLAYER_HIT",
-      payload: {
-        card,
-        nextDeck,
-      },
-    });
-
+    dispatch({ type: "PLAYER_HIT", payload: { card, nextDeck } });
     play("deal", 0.3);
 
     const nextTotal = handValue(nextPlayerHand);
@@ -168,6 +156,17 @@ export default function App() {
     dispatch({ type: "SPLIT_HAND" });
   }, [play, state.gameState, unlockAudio]);
 
+  const takeInsurance = useCallback(() => {
+    unlockAudio();
+    play("chip", 0.2);
+    dispatch({ type: "INSURANCE_DECISION", payload: { take: true } });
+  }, [play, unlockAudio]);
+
+  const declineInsurance = useCallback(() => {
+    play("button", 0.22);
+    dispatch({ type: "INSURANCE_DECISION", payload: { take: false } });
+  }, [play]);
+
   const resetGame = useCallback(() => {
     unlockAudio();
     play("button", 0.22);
@@ -207,10 +206,7 @@ export default function App() {
   const selectChip = useCallback((value) => {
     unlockAudio();
     play("chip", 0.2);
-    dispatch({
-      type: "SET_SELECTED_CHIP",
-      payload: value,
-    });
+    dispatch({ type: "SET_SELECTED_CHIP", payload: value });
   }, [play, unlockAudio]);
 
   const rescueFunds = useCallback(() => {
@@ -266,9 +262,7 @@ export default function App() {
   useEffect(() => {
     return () => {
       roundTokenRef.current += 1;
-      if (dealerStepTimeoutRef.current) {
-        clearTimeout(dealerStepTimeoutRef.current);
-      }
+      if (dealerStepTimeoutRef.current) clearTimeout(dealerStepTimeoutRef.current);
     };
   }, []);
 
@@ -276,7 +270,6 @@ export default function App() {
     if (previousGameStateRef.current !== "dealer-turn" && state.gameState === "dealer-turn") {
       play("flip", 0.24);
     }
-
     previousGameStateRef.current = state.gameState;
   }, [play, state.gameState]);
 
@@ -322,6 +315,43 @@ export default function App() {
     previousRoundStateRef.current = state.gameState;
     previousBankrollRef.current = state.bankroll;
   }, [reduceMotion, state.bankroll, state.bet, state.gameState, state.message]);
+
+  // Achievement checks
+  useEffect(() => {
+    const prevGameState = achievementGameStateRef.current;
+    const prevWinStreak = achievementWinStreakRef.current;
+
+    // Capture bankroll at the start of each new round (before any outcome)
+    const isNewRoundStart =
+      (prevGameState === "ready" || prevGameState === "round-over") &&
+      (state.gameState === "player-turn" || state.gameState === "insurance");
+    if (isNewRoundStart) {
+      bankrollAtDealRef.current = state.bankroll;
+    }
+
+    // Check achievements when a round ends
+    if (state.gameState === "round-over" && prevGameState !== "round-over") {
+      const wonRound = state.winStreak > prevWinStreak;
+
+      if (wonRound) unlock("first_win");
+      if (wonRound && state.message.includes("BLACKJACK")) unlock("blackjack");
+      if (state.winStreak >= 3 && prevWinStreak < 3) unlock("hot_streak");
+      if (state.winStreak >= 5 && prevWinStreak < 5) unlock("inferno");
+      if (state.message.includes("DEALER BUSTS")) unlock("dealer_bust");
+      if (wonRound && state.doubledDown) unlock("double_win");
+      if (state.message.includes("INSURANCE PAYS")) unlock("insurance_pay");
+      if (wonRound && bankrollAtDealRef.current < 100) unlock("comeback");
+      if (state.bankroll >= 750) unlock("loaded");
+    }
+
+    achievementGameStateRef.current = state.gameState;
+    achievementWinStreakRef.current = state.winStreak;
+  }, [state.gameState, state.winStreak, state.message, state.bankroll, state.doubledDown, unlock]);
+
+  // High roller: placed a $100 bet
+  useEffect(() => {
+    if (state.bet >= 100) unlock("high_roller");
+  }, [state.bet, unlock]);
 
   useEffect(() => {
     if (state.gameState !== "dealer-turn") return;
@@ -387,17 +417,9 @@ export default function App() {
     dealerStepTimeoutRef.current = setTimeout(() => {
       try {
         if (state.roundId !== roundTokenRef.current) return;
-
         const card = state.deck[0];
         const nextDeck = state.deck.slice(1);
-
-        dispatch({
-          type: "DEALER_DRAW",
-          payload: {
-            card,
-            nextDeck,
-          },
-        });
+        dispatch({ type: "DEALER_DRAW", payload: { card, nextDeck } });
         play("deal", 0.28);
       } catch (error) {
         console.error("Dealer draw step failed", error);
@@ -406,9 +428,7 @@ export default function App() {
     }, gameSpeed === "fast" ? 70 : 280);
 
     return () => {
-      if (dealerStepTimeoutRef.current) {
-        clearTimeout(dealerStepTimeoutRef.current);
-      }
+      if (dealerStepTimeoutRef.current) clearTimeout(dealerStepTimeoutRef.current);
     };
   }, [endRound, gameSpeed, play, state.dealerHand, state.deck, state.gameState, state.handBets, state.handOutcomes, state.playerHands, state.roundId]);
 
@@ -437,6 +457,7 @@ export default function App() {
     : null;
 
   const activeMultiplier = getStreakMultiplier(state.winStreak);
+
   const playerMeta = (
     <div className="flex flex-wrap items-center justify-end gap-2 text-right">
       {state.winStreak >= 1 && (

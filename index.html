@@ -9,9 +9,9 @@
       try {
         const valid = ["modern","classic","royal","cherry","gold"];
         const stored = localStorage.getItem("blackjack-theme");
-        document.documentElement.dataset.theme = valid.includes(stored) ? stored : "modern";
+        document.documentElement.dataset.theme = valid.includes(stored) ? stored : "classic";
       } catch (e) {
-        document.documentElement.dataset.theme = "modern";
+        document.documentElement.dataset.theme = "classic";
       }
     </script>
   </head>

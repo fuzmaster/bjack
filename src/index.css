@@ -511,7 +511,7 @@ h3,
 
 .surface-pill {
   display: inline-flex;
-  min-height: 3rem;
+  min-height: 2.4rem;
   flex-direction: column;
   justify-content: center;
   gap: 0.1rem;

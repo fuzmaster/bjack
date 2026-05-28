@@ -43,32 +43,27 @@ export function useGameAudio() {
 
   const unlockAudio = useCallback(() => {
     if (unlockedRef.current) return;
-
     unlockedRef.current = true;
-    Object.entries(audioRef.current).forEach(([name, audio]) => {
-      const defaultVolume = volumeMapRef.current[name] ?? 0.4;
-      try {
-        audio.volume = 0;
-        const playback = audio.play();
-        if (playback && typeof playback.then === "function") {
-          playback
-            .then(() => {
-              audio.pause();
-              audio.currentTime = 0;
-              audio.volume = defaultVolume;
-            })
-            .catch(() => {
-              audio.volume = defaultVolume;
-            });
-        } else {
-          audio.pause();
-          audio.currentTime = 0;
-          audio.volume = defaultVolume;
-        }
-      } catch {
-        audio.volume = defaultVolume;
+
+    // Unlock with a single silent play on one element — iOS only needs one
+    // user-gesture-gated play to open the audio context for all elements
+    const first = Object.values(audioRef.current)[0];
+    if (!first) return;
+    try {
+      first.volume = 0;
+      const playback = first.play();
+      if (playback && typeof playback.then === "function") {
+        playback
+          .then(() => { first.pause(); first.currentTime = 0; first.volume = volumeMapRef.current.deal ?? 0.4; })
+          .catch(() => { first.volume = volumeMapRef.current.deal ?? 0.4; });
+      } else {
+        first.pause();
+        first.currentTime = 0;
+        first.volume = volumeMapRef.current.deal ?? 0.4;
       }
-    });
+    } catch {
+      // ignore
+    }
   }, []);
 
   const play = useCallback((name, volume = 0.4) => {

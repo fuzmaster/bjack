@@ -56,6 +56,31 @@ export default function ActionPanel({
         </>
       )}
 
+      {isInsurance && (
+        <>
+          <div className="mb-2 text-center">
+            <div className="text-xs font-black uppercase tracking-[0.08em] opacity-60">Dealer Shows Ace</div>
+            <div className="mt-0.5 text-[0.65rem] opacity-50">Insurance pays 2 to 1 if dealer has blackjack</div>
+          </div>
+          <div className="grid grid-cols-2 gap-2 sm:gap-3">
+            <UIButton
+              onClick={onTakeInsurance}
+              className="min-h-[72px] flex-col text-base text-white shadow-[4px_4px_0_#000]"
+              style={{ background: "#059669" }}
+            >
+              <span>Take Insurance</span>
+              <span className="mt-0.5 text-sm font-bold opacity-80">${insuranceCost}</span>
+            </UIButton>
+            <UIButton
+              onClick={onDeclineInsurance}
+              className="min-h-[72px] text-base text-[var(--button-text)] bg-[var(--button-deal-bg)] shadow-[4px_4px_0_#000]"
+            >
+              No Thanks
+            </UIButton>
+          </div>
+        </>
+      )}
+
       {isPlayerTurn && (
         <>
           <div className={labelClass}>Your Move</div>
