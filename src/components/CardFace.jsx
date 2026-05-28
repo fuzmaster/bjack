@@ -10,10 +10,7 @@ const MotionDiv = motion.div;
  */
 function Monogram({ rank, suit, size }) {
   return (
-    <div
-      className="v21-card-center"
-      aria-hidden="true"
-    >
+    <div className="v21-card-center" aria-hidden="true">
       <div style={{ position: "relative", width: size, height: size, display: "grid", placeItems: "center" }}>
         {/* Outer brass-tinted diamond frame */}
         <div
@@ -28,7 +25,7 @@ function Monogram({ rank, suit, size }) {
         <div
           style={{
             position: "absolute",
-            inset: Math.round(size * 0.12),
+            inset: Math.round(Number(size) * 0.12) || "12%",
             border: "0.5px solid oklch(0.66 0.10 64 / 0.22)",
             borderRadius: 4,
             transform: "rotate(45deg)",
@@ -38,17 +35,17 @@ function Monogram({ rank, suit, size }) {
         <span
           className="v21-mono"
           style={{
-            fontSize: Math.round(size * 0.84),
+            fontSize: `calc(${size} * 0.82)`,
             position: "relative",
             zIndex: 1,
-            marginTop: -Math.round(size * 0.04),
+            marginTop: `calc(${size} * -0.04)`,
           }}
         >
           {rank}
         </span>
         {/* Suit pip below the letter */}
-        <div style={{ position: "absolute", bottom: Math.round(size * 0.05), color: "currentColor" }}>
-          <SuitIcon suit={suit} style={{ width: Math.round(size * 0.24), height: Math.round(size * 0.24) }} />
+        <div style={{ position: "absolute", bottom: `calc(${size} * 0.05)`, color: "currentColor" }}>
+          <SuitIcon suit={suit} style={{ width: `calc(${size} * 0.24)`, height: `calc(${size} * 0.24)` }} />
         </div>
       </div>
     </div>
@@ -58,7 +55,7 @@ function Monogram({ rank, suit, size }) {
 /**
  * Card guilloché back — deep felt with diamond lines and the "V" monogram.
  */
-function CardBack({ width, height }) {
+function CardBack() {
   return (
     <div
       className="v21-card-back"
@@ -101,11 +98,6 @@ export default function CardFace({ card, hidden = false, reveal = false, index =
   const ariaLabel = `${card.rank} of ${suitName}`;
   const isFaceCard = card.rank === "J" || card.rank === "Q" || card.rank === "K";
 
-  const rankSize = "var(--card-rank-size)";
-  const pipSmSize = "var(--card-pip-sm)";
-  const pipLgSize = "var(--card-pip-lg)";
-  const monoSize = `calc(var(--card-w) * 0.58)`;
-
   return (
     <MotionDiv
       initial={reduceMotion ? false : { opacity: 0, y: -36, scale: 0.94 }}
@@ -120,19 +112,10 @@ export default function CardFace({ card, hidden = false, reveal = false, index =
       exit={{
         opacity: 0,
         scale: 0.92,
-        transition: { duration: 0.10 },
+        // Fast exit, no stagger — all cards leave simultaneously
+        transition: { duration: reduceMotion ? 0 : 0.10 },
       }}
       className="relative shrink-0"
-      style={{
-        width: "var(--card-w)",
-        height: "var(--card-h)",
-      }}
-      exit={{
-        opacity: 0, scale: 0.9,
-        // Fast exit, no stagger — cards leave simultaneously
-        transition: { duration: reduceMotion ? 0 : 0.1 },
-      }}
-      className="relative"
       style={{ width: "var(--card-w)", height: "var(--card-h)" }}
       role="img"
       aria-label={hidden && !reveal ? "Face-down card" : ariaLabel}
@@ -159,28 +142,28 @@ export default function CardFace({ card, hidden = false, reveal = false, index =
             style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}
           >
             {/* Top-left corner */}
-            <div className="v21-card-corner tl" style={{ fontSize: rankSize }}>
-              <span className="v21-mono" style={{ fontSize: rankSize }} aria-hidden="true">
+            <div className="v21-card-corner tl" style={{ fontSize: "var(--card-rank-size)" }}>
+              <span className="v21-mono" style={{ fontSize: "var(--card-rank-size)" }} aria-hidden="true">
                 {card.rank}
               </span>
-              <SuitIcon suit={card.suit} style={{ width: pipSmSize, height: pipSmSize }} />
+              <SuitIcon suit={card.suit} style={{ width: "var(--card-pip-sm)", height: "var(--card-pip-sm)" }} />
             </div>
 
             {/* Centre — monogram for face cards, single pip for others */}
             {isFaceCard ? (
-              <Monogram rank={card.rank} suit={card.suit} size={`calc(var(--card-w) * 0.58)`} />
+              <Monogram rank={card.rank} suit={card.suit} size="calc(var(--card-w) * 0.58)" />
             ) : (
               <div className="v21-card-center" aria-hidden="true">
-                <SuitIcon suit={card.suit} style={{ width: pipLgSize, height: pipLgSize }} />
+                <SuitIcon suit={card.suit} style={{ width: "var(--card-pip-lg)", height: "var(--card-pip-lg)" }} />
               </div>
             )}
 
-            {/* Bottom-right corner (rotated) */}
-            <div className="v21-card-corner br" style={{ fontSize: rankSize }}>
-              <span className="v21-mono" style={{ fontSize: rankSize }} aria-hidden="true">
+            {/* Bottom-right corner (rotated 180°) */}
+            <div className="v21-card-corner br" style={{ fontSize: "var(--card-rank-size)" }}>
+              <span className="v21-mono" style={{ fontSize: "var(--card-rank-size)" }} aria-hidden="true">
                 {card.rank}
               </span>
-              <SuitIcon suit={card.suit} style={{ width: pipSmSize, height: pipSmSize }} />
+              <SuitIcon suit={card.suit} style={{ width: "var(--card-pip-sm)", height: "var(--card-pip-sm)" }} />
             </div>
           </MotionDiv>
         )}
