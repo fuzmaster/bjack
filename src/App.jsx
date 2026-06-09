@@ -600,10 +600,6 @@ export default function App() {
           <path className="v21-arc-thin" d="M 20 107 Q 300 -2 580 107" />
           <ellipse cx="300" cy="292" rx="118" ry="34" />
           <ellipse className="v21-arc-thin" cx="300" cy="292" rx="130" ry="41" />
-          <text x="300" y="60" textAnchor="middle">BLACKJACK · PAYS 3 TO 2</text>
-          <text x="300" y="75" textAnchor="middle" style={{ fontSize: "6px", letterSpacing: "0.28em" }}>
-            DEALER MUST DRAW TO 16 · STAND ON ALL 17S
-          </text>
         </svg>
 
         {/* Dealer zone */}
