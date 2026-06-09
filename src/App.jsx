@@ -620,6 +620,32 @@ export default function App() {
           </div>
         </div>
 
+        {/* Felt cue — "21" dashed ring during ready state when no cards on table */}
+        {state.gameState === "ready" && state.playerHands[0].length === 0 && (
+          <div className="v21-felt-cue" aria-hidden="true">
+            <div className="ring"><span className="mono">21</span></div>
+            <div className="cue-text">Set your bet, then deal</div>
+          </div>
+        )}
+
+        {/* Result plaque — inline verdict + delta at round end */}
+        {state.gameState === "round-over" && (
+          <div
+            className={`v21-result-plaque ${state.lastDelta > 0 ? "win" : ""}`}
+            role="status"
+            aria-live="polite"
+          >
+            <span className="verdict">{state.message}</span>
+            <span className={`delta ${state.lastDelta > 0 ? "up" : state.lastDelta < 0 ? "down" : "push"}`}>
+              {state.lastDelta > 0
+                ? `+$${Math.abs(state.lastDelta).toLocaleString()}`
+                : state.lastDelta < 0
+                  ? `−$${Math.abs(state.lastDelta).toLocaleString()}`
+                  : "PUSH · NO CHANGE"}
+            </span>
+          </div>
+        )}
+
         <div className="my-auto" />
 
         {/* Player zone */}
@@ -645,23 +671,32 @@ export default function App() {
         </div>
       </main>
 
-      {/* BOTTOM CONTROLS — BetControls + ActionPanel side by side, always visible */}
+      {/* BOTTOM CONTROLS — bet ⇄ wager-locked swap on left, action cluster on right */}
       <div
         className="relative z-10 flex shrink-0"
         style={{ borderTop: "1px solid oklch(0.82 0.10 78 / 0.10)" }}
         aria-label="Game controls"
       >
         <div className="min-w-0 flex-1">
-          <BetControls
-            bet={state.bet}
-            chipValues={CHIP_VALUES}
-            selectedChip={state.selectedChip}
-            onSelectChip={selectChip}
-            onIncreaseBet={increaseBet}
-            onDecreaseBet={decreaseBet}
-            disabled={isGameActive}
-            compact
-          />
+          {state.gameState === "player-turn" || state.gameState === "dealer-turn" || state.gameState === "insurance" ? (
+            <div className="p-2 sm:p-3">
+              <div className="v21-wager-locked">
+                <span className="k">Wager Locked</span>
+                <span className="v">${(state.handBets?.[state.activeHandIndex] ?? state.bet).toLocaleString()}</span>
+              </div>
+            </div>
+          ) : (
+            <BetControls
+              bet={state.bet}
+              chipValues={CHIP_VALUES}
+              selectedChip={state.selectedChip}
+              onSelectChip={selectChip}
+              onIncreaseBet={increaseBet}
+              onDecreaseBet={decreaseBet}
+              disabled={false}
+              compact
+            />
+          )}
         </div>
         <div className="w-px shrink-0" style={{ background: "oklch(0.82 0.10 78 / 0.10)" }} />
         <div className="min-w-0 flex-1">

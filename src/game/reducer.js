@@ -51,6 +51,7 @@ export function createInitialGameState(deck, roundId = 0, bankroll = STARTING_BA
     handsLost: 0,
     handsPushed: 0,
     highestBankroll: bankroll,
+    lastDelta: 0,
   };
 }
 
@@ -238,6 +239,7 @@ export function gameReducer(state, action) {
         dealerRevealed: true,
         activeHandIndex: 0,
         message,
+        lastDelta: finalDelta,
         bankroll: newBankroll,
         winStreak: newStreak,
         handsWon: state.handsWon + handsWon,
