@@ -76,13 +76,14 @@ export default function BetControls({
         </UIButton>
       </div>
 
-      <div className="flex flex-wrap justify-center gap-2.5 pt-0.5">
+      <div className={`flex flex-nowrap justify-center pt-0.5 ${compact ? "gap-1.5" : "gap-2.5"}`}>
         {chipValues.map((value) => (
           <Chip
             key={value}
             value={value}
             active={selectedChip === value}
             onClick={() => onSelectChip(value)}
+            compact={compact}
           />
         ))}
       </div>

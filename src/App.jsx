@@ -1,7 +1,7 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import confetti from "canvas-confetti";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown, ChevronUp, Settings as SettingsIcon, Flame } from "lucide-react";
 import TopBar from "./components/TopBar";
 import BetControls from "./components/BetControls";
 import ActionPanel from "./components/ActionPanel";
@@ -543,29 +543,74 @@ export default function App() {
       <div className="pointer-events-none fixed inset-x-0 top-0 h-64" style={{ background: "var(--ambient-glow-top)" }} aria-hidden="true" />
       <div className="pointer-events-none fixed inset-x-0 bottom-0 h-48" style={{ background: "var(--ambient-floor-gradient)" }} aria-hidden="true" />
 
-      {/* SETTINGS STRIP — collapsed by default */}
+      {/* ALWAYS-VISIBLE HUD — brand · bankroll · streak · settings cog */}
       <header
         className="relative z-10 shrink-0"
         style={{ borderBottom: "1px solid oklch(0.82 0.10 78 / 0.10)" }}
-        aria-label="Settings"
+        aria-label="Game HUD"
       >
-        <button
-          type="button"
-          onClick={() => setIsSettingsOpen((prev) => !prev)}
-          className="flex w-full items-center justify-between px-3 py-1.5 sm:px-4"
-          aria-expanded={isSettingsOpen}
-          aria-controls="settings-panel"
-        >
+        <div className="flex w-full items-center gap-2 px-3 py-1.5 sm:px-4">
           <span
-            className="text-[0.62rem] font-bold uppercase tracking-[0.12em]"
-            style={{ color: "var(--panel-text)", fontFamily: "var(--font-sans)" }}
+            className="shrink-0 text-base leading-none"
+            style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontWeight: 500, color: "var(--page-text)" }}
           >
-            Adjust Settings
+            Velvet <span style={{ color: "var(--brass-200)" }}>21</span>
           </span>
-          {isSettingsOpen
-            ? <ChevronUp className="h-3.5 w-3.5" style={{ color: "var(--panel-text)" }} />
-            : <ChevronDown className="h-3.5 w-3.5" style={{ color: "var(--panel-text)" }} />}
-        </button>
+
+          <div className="flex-1" />
+
+          {state.winStreak >= 1 && (
+            <div
+              className={`flex flex-col items-end leading-none ${state.winStreak >= 3 ? "v21-streak-hot" : ""}`}
+              title={`${state.winStreak} consecutive win${state.winStreak > 1 ? "s" : ""}`}
+            >
+              <span
+                className="flex items-center gap-1 text-[0.55rem] font-bold uppercase tracking-[0.12em]"
+                style={{ color: "var(--panel-muted)", fontFamily: "var(--font-sans)" }}
+              >
+                {state.winStreak >= 3 && <Flame className="h-2.5 w-2.5" />} Streak
+              </span>
+              <span
+                className="text-sm font-bold"
+                style={{ color: "var(--brass-100)", fontFamily: "var(--font-display)", fontStyle: "italic" }}
+              >
+                {state.winStreak}
+              </span>
+            </div>
+          )}
+
+          <div className="flex flex-col items-end leading-none">
+            <span
+              className="text-[0.55rem] font-bold uppercase tracking-[0.12em]"
+              style={{ color: "var(--panel-muted)", fontFamily: "var(--font-sans)" }}
+            >
+              Bankroll
+            </span>
+            <span
+              className="text-base font-bold numeric-tabular"
+              style={{ color: "var(--brass-100)", fontFamily: "var(--font-display)", fontStyle: "italic" }}
+            >
+              ${state.bankroll.toLocaleString()}
+            </span>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setIsSettingsOpen((prev) => !prev)}
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md"
+            style={{
+              background: isSettingsOpen ? "var(--brass-400)" : "oklch(0.22 0.012 52 / 0.60)",
+              color: isSettingsOpen ? "var(--ink-900)" : "var(--panel-text)",
+              border: "1px solid oklch(0.82 0.10 78 / 0.18)",
+            }}
+            aria-expanded={isSettingsOpen}
+            aria-controls="settings-panel"
+            aria-label="Settings"
+            title="Settings"
+          >
+            <SettingsIcon className="h-4 w-4" />
+          </button>
+        </div>
 
         {isSettingsOpen && (
           <div id="settings-panel" className="px-3 pb-2 sm:px-4">

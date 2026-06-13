@@ -1,10 +1,11 @@
-export default function Chip({ value, active, onClick }) {
+export default function Chip({ value, active, onClick, compact = false }) {
+  const size = compact ? "h-10 w-10" : "h-14 w-14";
   return (
     <button
       type="button"
       onClick={onClick}
       data-active={active || undefined}
-      className="chip-button relative h-14 w-14 rounded-full font-bold transition"
+      className={`chip-button relative ${size} rounded-full font-bold transition`}
       style={{
         background: active
           ? "linear-gradient(135deg, var(--brass-300), var(--brass-400))"
@@ -21,7 +22,7 @@ export default function Chip({ value, active, onClick }) {
         fontFamily: "var(--font-sans)",
       }}
     >
-      <span className="text-base">${value}</span>
+      <span className={compact ? "text-xs" : "text-base"}>${value}</span>
     </button>
   );
 }
