@@ -1,7 +1,7 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import confetti from "canvas-confetti";
-import { ChevronDown, ChevronUp, Settings as SettingsIcon, Flame } from "lucide-react";
+import { ChevronDown, ChevronUp, Settings as SettingsIcon, Flame, Volume2, VolumeX, Zap, TrendingUp, RefreshCcw } from "lucide-react";
 import TopBar from "./components/TopBar";
 import BetControls from "./components/BetControls";
 import ActionPanel from "./components/ActionPanel";
@@ -536,7 +536,7 @@ export default function App() {
   );
 
   return (
-    <div className="app-shell flex h-[100dvh] w-full flex-col overflow-hidden bg-[var(--page-bg)] text-[var(--page-text)]">
+    <div className="app-shell relative flex h-full w-full flex-col overflow-hidden bg-[var(--page-bg)] text-[var(--page-text)]">
       {/* Fixed overlay layers */}
       <div className="pointer-events-none fixed inset-0" style={{ background: "var(--page-gradient)" }} aria-hidden="true" />
       <div className="neo-noise-overlay pointer-events-none fixed inset-0" aria-hidden="true" />
@@ -613,23 +613,81 @@ export default function App() {
         </div>
 
         {isSettingsOpen && (
-          <div id="settings-panel" className="px-3 pb-2 sm:px-4">
-            <TopBar
-              bankroll={state.bankroll}
-              bet={state.bet}
-              onReset={resetGame}
-              theme={theme}
-              onThemeChange={setTheme}
-              themeOptions={themeOptions}
-              difficulty={difficulty}
-              onDifficultyChange={setDifficulty}
-              isMuted={isMuted}
-              onToggleMute={toggleMute}
-              gameSpeed={gameSpeed}
-              onToggleGameSpeed={toggleGameSpeed}
-              onOpenStats={openStatsModal}
-              compact
-            />
+          <div id="settings-panel" className="flex flex-wrap items-center gap-3 px-3 pb-2 sm:px-4">
+            {/* Theme swatches */}
+            <div className="flex items-center gap-1.5" role="group" aria-label="Theme">
+              {themeOptions.map((option) => {
+                const isActive = theme === option.key;
+                return (
+                  <button
+                    key={option.key}
+                    type="button"
+                    onClick={() => setTheme(option.key)}
+                    aria-pressed={isActive}
+                    aria-label={`${option.label} theme`}
+                    title={option.label}
+                    className="h-5 w-5 rounded-full transition-transform"
+                    style={{
+                      background: `oklch(0.30 0.06 ${option.key === "modern" ? 220 : option.key === "classic" ? 142 : option.key === "royal" ? 280 : option.key === "cherry" ? 12 : 48})`,
+                      boxShadow: isActive
+                        ? `0 0 0 1.5px oklch(0.82 0.10 78), 0 0 0 3px oklch(0.18 0.012 50)`
+                        : `0 0 0 1px oklch(0.82 0.10 78 / 0.25)`,
+                      transform: isActive ? "scale(1.12)" : "none",
+                    }}
+                  />
+                );
+              })}
+            </div>
+
+            <div className="flex-1" />
+
+            {/* Icon controls */}
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={toggleMute}
+                aria-label={isMuted ? "Unmute" : "Mute"}
+                title={isMuted ? "Unmute" : "Mute"}
+                className="flex h-7 w-7 items-center justify-center rounded-md"
+                style={{ background: "oklch(0.22 0.012 52 / 0.60)", color: "var(--panel-text)", border: "1px solid oklch(0.82 0.10 78 / 0.18)" }}
+              >
+                {isMuted ? <VolumeX className="h-3.5 w-3.5" /> : <Volume2 className="h-3.5 w-3.5" />}
+              </button>
+              <button
+                type="button"
+                onClick={toggleGameSpeed}
+                aria-label={gameSpeed === "fast" ? "Speed: Fast" : "Speed: Normal"}
+                title={gameSpeed === "fast" ? "Speed: Fast" : "Speed: Normal"}
+                className="flex h-7 w-7 items-center justify-center rounded-md"
+                style={{
+                  background: gameSpeed === "fast" ? "var(--brass-400)" : "oklch(0.22 0.012 52 / 0.60)",
+                  color: gameSpeed === "fast" ? "var(--ink-900)" : "var(--panel-text)",
+                  border: "1px solid oklch(0.82 0.10 78 / 0.18)",
+                }}
+              >
+                <Zap className="h-3.5 w-3.5" />
+              </button>
+              <button
+                type="button"
+                onClick={openStatsModal}
+                aria-label="View stats"
+                title="View stats"
+                className="flex h-7 w-7 items-center justify-center rounded-md"
+                style={{ background: "oklch(0.22 0.012 52 / 0.60)", color: "var(--panel-text)", border: "1px solid oklch(0.82 0.10 78 / 0.18)" }}
+              >
+                <TrendingUp className="h-3.5 w-3.5" />
+              </button>
+              <button
+                type="button"
+                onClick={resetGame}
+                aria-label="Reset game"
+                title="Reset game"
+                className="flex h-7 w-7 items-center justify-center rounded-md"
+                style={{ background: "oklch(0.22 0.012 52 / 0.60)", color: "var(--panel-text)", border: "1px solid oklch(0.82 0.10 78 / 0.18)" }}
+              >
+                <RefreshCcw className="h-3.5 w-3.5" />
+              </button>
+            </div>
           </div>
         )}
       </header>

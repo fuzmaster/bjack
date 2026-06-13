@@ -123,13 +123,26 @@
    Base
    ───────────────────────────────────────────────────────────────────────────── */
 html,
-body,
-#root {
+body {
   margin: 0;
   height: 100%;
   width: 100%;
   overflow: hidden;
   overscroll-behavior: none;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+}
+
+#root {
+  margin: 0;
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 body {
@@ -616,6 +629,8 @@ h3,
 
 .app-shell {
   transition: background-color 220ms ease, color 220ms ease;
+  flex: 1;
+  min-height: 0;
 }
 
 /* Desktop: letterbox the app to a mobile-width column; felt bleeds out behind */
