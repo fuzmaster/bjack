@@ -502,6 +502,7 @@ export default function App() {
 
   const activeMultiplier = getStreakMultiplier(state.winStreak);
 
+  const isSplit = state.playerHands.length > 1;
   const playerMeta = (
     <div className="flex flex-wrap items-center justify-end gap-2 text-right">
       {state.winStreak >= 1 && (
@@ -515,23 +516,25 @@ export default function App() {
           </span>
         </div>
       )}
-      <div className="surface-pill">
-        <span className="text-[0.65rem] font-black uppercase tracking-[0.12em] opacity-70">Bet H{state.activeHandIndex + 1}</span>
-        <span className="numeric-tabular text-base font-black sm:text-lg">{formatCurrency(activeHandBet)}</span>
-      </div>
-      <div
-        className="surface-pill surface-pill-accent"
-        style={{
-          boxShadow: roundResult === "win" ? "0 0 0 2px var(--glow-win)" : roundResult === "loss" ? "0 0 0 2px var(--glow-loss)" : "none",
-          transition: "box-shadow 280ms ease",
-        }}
-        role="status"
-        aria-live="polite"
-        aria-atomic="true"
-      >
-        <span className="text-[0.65rem] font-bold uppercase tracking-[0.12em] opacity-60" style={{ fontFamily: "var(--font-sans)" }}>Table</span>
-        <span className="text-sm font-bold uppercase tracking-[0.08em] sm:text-[0.95rem]" style={{ fontFamily: "var(--font-sans)" }}>{state.message}</span>
-      </div>
+      {/* Bet pill only during split (when "H1 / H2" labels matter) — else redundant with dock */}
+      {isSplit && (
+        <div className="surface-pill">
+          <span className="text-[0.65rem] font-black uppercase tracking-[0.12em] opacity-70">Bet H{state.activeHandIndex + 1}</span>
+          <span className="numeric-tabular text-base font-black sm:text-lg">{formatCurrency(activeHandBet)}</span>
+        </div>
+      )}
+      {/* Status pill — suppressed during round-over since plaque carries the verdict */}
+      {!isRoundOver && (
+        <div
+          className="surface-pill surface-pill-accent"
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+        >
+          <span className="text-[0.65rem] font-bold uppercase tracking-[0.12em] opacity-60" style={{ fontFamily: "var(--font-sans)" }}>Table</span>
+          <span className="text-sm font-bold uppercase tracking-[0.08em] sm:text-[0.95rem]" style={{ fontFamily: "var(--font-sans)" }}>{state.message}</span>
+        </div>
+      )}
     </div>
   );
 
@@ -587,8 +590,8 @@ export default function App() {
               Bankroll
             </span>
             <span
-              className="text-base font-bold numeric-tabular"
-              style={{ color: "var(--brass-100)", fontFamily: "var(--font-display)", fontStyle: "italic" }}
+              className="text-xl font-bold numeric-tabular"
+              style={{ color: "var(--brass-100)", fontFamily: "var(--font-display)", fontStyle: "italic", letterSpacing: "0.01em" }}
             >
               ${state.bankroll.toLocaleString()}
             </span>
@@ -772,7 +775,7 @@ export default function App() {
 
       {/* BOTTOM CONTROLS — bet ⇄ wager-locked swap on left, action cluster on right */}
       <div
-        className="relative z-10 flex shrink-0"
+        className="relative z-10 flex shrink-0 min-h-[178px]"
         style={{ borderTop: "1px solid oklch(0.82 0.10 78 / 0.10)" }}
         aria-label="Game controls"
       >
