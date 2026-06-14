@@ -7,6 +7,7 @@ import BetControls from "./components/BetControls";
 import ActionPanel from "./components/ActionPanel";
 import HandZone from "./components/HandZone";
 const StatsModal = lazy(() => import("./components/StatsModal"));
+const TableScene3D = lazy(() => import("./components/TableScene3D"));
 import { useTheme } from "./context/useTheme";
 import { useAchievements } from "./hooks/useAchievements";
 import { CHIP_VALUES, createDeck, DIFFICULTY_PRESETS, getStreakMultiplier, handValue, RESHUFFLE_THRESHOLD, resolveRound } from "./game/blackjack";
@@ -814,8 +815,13 @@ export default function App() {
         className={`v21-felt v21-felt-tilt relative z-0 flex min-h-0 flex-1 flex-col justify-between overflow-hidden${roundResult === "loss" && !reduceMotion ? " v21-table-breath" : ""}`}
         aria-label="Blackjack table"
       >
-        {/* Table arc lines */}
-        <svg className="v21-arcs" viewBox="0 0 600 380" preserveAspectRatio="none" aria-hidden="true">
+        {/* 3D table scene — WebGL felt with proper lighting + parallax camera */}
+        <Suspense fallback={null}>
+          <TableScene3D />
+        </Suspense>
+
+        {/* Table arc lines — overlaid on top of the 3D felt at z-index 1 */}
+        <svg className="v21-arcs" viewBox="0 0 600 380" preserveAspectRatio="none" aria-hidden="true" style={{ zIndex: 1 }}>
           <path d="M 20 95 Q 300 -15 580 95" />
           <path className="v21-arc-thin" d="M 20 107 Q 300 -2 580 107" />
           <ellipse cx="300" cy="292" rx="118" ry="34" />
