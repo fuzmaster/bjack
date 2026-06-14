@@ -337,6 +337,17 @@ h3,
   stroke: none;
 }
 
+/* Bleed arcs — same curves but rendered behind the letterboxed shell on desktop */
+.v21-bleed-arcs {
+  stroke: oklch(0.68 calc(var(--felt-c) * 1.5) var(--felt-h) / 0.14);
+  fill: none;
+  stroke-width: 0.6;
+}
+.v21-bleed-arcs .v21-arc-thin {
+  stroke: oklch(0.68 calc(var(--felt-c) * 1.5) var(--felt-h) / 0.08);
+  stroke-width: 0.3;
+}
+
 /* ─────────────────────────────────────────────────────────────────────────────
    V21 Brass Button System
    ───────────────────────────────────────────────────────────────────────────── */
@@ -557,6 +568,20 @@ h3,
   flex-direction: column-reverse;
   align-items: center;
   min-width: 30px;
+}
+/* Cast a soft elliptical shadow under each pile so chips rest on the felt */
+.v21-chip-pile::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -4px;
+  width: 28px;
+  height: 6px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, oklch(0 0 0 / 0.50) 0%, oklch(0 0 0 / 0) 70%);
+  transform: translateX(-50%);
+  pointer-events: none;
+  z-index: -1;
 }
 .v21-chip-pile .count-tag {
   position: absolute;

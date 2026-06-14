@@ -595,6 +595,20 @@ export default function App() {
       <div className="pointer-events-none fixed inset-x-0 top-0 h-64" style={{ background: "var(--ambient-glow-top)" }} aria-hidden="true" />
       <div className="pointer-events-none fixed inset-x-0 bottom-0 h-48" style={{ background: "var(--ambient-floor-gradient)" }} aria-hidden="true" />
 
+      {/* Desktop felt bleed — table arcs extend out behind the letterboxed column */}
+      <svg
+        className="v21-bleed-arcs pointer-events-none hidden md:block fixed inset-0 w-full h-full"
+        viewBox="0 0 600 380"
+        preserveAspectRatio="none"
+        aria-hidden="true"
+        style={{ zIndex: 0 }}
+      >
+        <path d="M 20 95 Q 300 -15 580 95" />
+        <path className="v21-arc-thin" d="M 20 107 Q 300 -2 580 107" />
+        <ellipse cx="300" cy="292" rx="118" ry="34" />
+        <ellipse className="v21-arc-thin" cx="300" cy="292" rx="130" ry="41" />
+      </svg>
+
       {/* ALWAYS-VISIBLE HUD — brand · bankroll · streak · settings cog */}
       <header
         className="relative z-10 shrink-0"
@@ -770,14 +784,6 @@ export default function App() {
             />
           </div>
         </div>
-
-        {/* Felt cue — "21" dashed ring during ready state when no cards on table */}
-        {state.gameState === "ready" && state.playerHands[0].length === 0 && (
-          <div className="v21-felt-cue" aria-hidden="true">
-            <div className="ring"><span className="mono">21</span></div>
-            <div className="cue-text">Set your bet, then deal</div>
-          </div>
-        )}
 
         {/* Physical chip stack on the betting circle */}
         <FeltChipStack

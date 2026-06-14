@@ -138,7 +138,8 @@ function Monogram({ rank, suit, size }) {
 }
 
 /**
- * Card guilloché back — deep felt with diamond lines and the "V" monogram.
+ * Card guilloché back — deep felt with brass filigree, nested diamonds,
+ * cross hairlines, V monogram, and a hairline corner frame.
  */
 function CardBack() {
   return (
@@ -152,25 +153,50 @@ function CardBack() {
         style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}
         aria-hidden="true"
       >
-        {/* Guilloché diamond lines */}
-        <g stroke="oklch(0.82 0.10 78 / 0.45)" fill="none" strokeWidth="0.55">
-          <path d="M50 26 L78 70 L50 114 L22 70 Z" />
-          <path d="M50 36 L70 70 L50 104 L30 70 Z" />
-          <circle cx="50" cy="70" r="7.5" />
+        {/* Outer brass frame inset 4px from edge */}
+        <rect x="3.5" y="3.5" width="93" height="133" rx="4"
+              stroke="oklch(0.82 0.10 78 / 0.32)" fill="none" strokeWidth="0.4" />
+        <rect x="5.5" y="5.5" width="89" height="129" rx="3"
+              stroke="oklch(0.82 0.10 78 / 0.18)" fill="none" strokeWidth="0.3" />
+
+        {/* Nested guilloché diamonds */}
+        <g stroke="oklch(0.82 0.10 78 / 0.42)" fill="none" strokeWidth="0.5">
+          <path d="M50 14 L88 70 L50 126 L12 70 Z" />
+          <path d="M50 22 L80 70 L50 118 L20 70 Z" />
+          <path d="M50 30 L72 70 L50 110 L28 70 Z" />
+          <path d="M50 40 L64 70 L50 100 L36 70 Z" />
         </g>
+
+        {/* Cross hairlines */}
+        <g stroke="oklch(0.82 0.10 78 / 0.16)" strokeWidth="0.3">
+          <line x1="12" y1="70" x2="88" y2="70" />
+          <line x1="50" y1="14" x2="50" y2="126" />
+        </g>
+
+        {/* Small starburst rays inside the inner diamond */}
+        <g stroke="oklch(0.82 0.10 78 / 0.22)" strokeWidth="0.25">
+          <line x1="50" y1="55" x2="50" y2="62" />
+          <line x1="50" y1="78" x2="50" y2="85" />
+          <line x1="42" y1="70" x2="46" y2="70" />
+          <line x1="54" y1="70" x2="58" y2="70" />
+        </g>
+
+        {/* Centre brass medallion */}
+        <circle cx="50" cy="70" r="9" fill="oklch(0.18 calc(var(--felt-c) * 0.5) var(--felt-h) / 0.85)"
+                stroke="oklch(0.82 0.10 78 / 0.55)" strokeWidth="0.4" />
+
         {/* "V" monogram */}
-        <text
-          x="50"
-          y="76"
-          textAnchor="middle"
-          fontFamily="Fraunces, Georgia, serif"
-          fontStyle="italic"
-          fontWeight="500"
-          fontSize="13"
-          fill="oklch(0.92 0.06 78 / 0.90)"
-        >
-          V
-        </text>
+        <text x="50" y="75.5" textAnchor="middle"
+              fontFamily="Fraunces, Georgia, serif" fontStyle="italic" fontWeight="500"
+              fontSize="11" fill="oklch(0.92 0.06 78 / 0.95)">V</text>
+
+        {/* Tiny corner ornaments */}
+        <g fill="oklch(0.82 0.10 78 / 0.40)">
+          <circle cx="11" cy="11" r="0.9" />
+          <circle cx="89" cy="11" r="0.9" />
+          <circle cx="11" cy="129" r="0.9" />
+          <circle cx="89" cy="129" r="0.9" />
+        </g>
       </svg>
     </div>
   );
