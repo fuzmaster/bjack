@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <radialGradient id="felt" cx="50%" cy="40%" r="65%">
+      <stop offset="0%" stop-color="#2e5a47" />
+      <stop offset="60%" stop-color="#1c3b2c" />
+      <stop offset="100%" stop-color="#0f2218" />
+    </radialGradient>
+    <linearGradient id="brass" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f5dba1" />
+      <stop offset="50%" stop-color="#e0b96f" />
+      <stop offset="100%" stop-color="#a07a3a" />
+    </linearGradient>
+    <filter id="innerShadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="4" />
+    </filter>
+  </defs>
+
+  <!-- Rounded square background — felt gradient -->
+  <rect x="0" y="0" width="512" height="512" rx="96" ry="96" fill="url(#felt)" />
+
+  <!-- Brass inner frame -->
+  <rect x="32" y="32" width="448" height="448" rx="72" ry="72" fill="none" stroke="url(#brass)" stroke-width="3" opacity="0.45" />
+  <rect x="48" y="48" width="416" height="416" rx="64" ry="64" fill="none" stroke="url(#brass)" stroke-width="1.5" opacity="0.25" />
+
+  <!-- Subtle guilloché diamond -->
+  <g stroke="url(#brass)" fill="none" stroke-width="1" opacity="0.18">
+    <path d="M256 96 L416 256 L256 416 L96 256 Z" />
+    <path d="M256 144 L368 256 L256 368 L144 256 Z" />
+  </g>
+
+  <!-- "V21" monogram, italic serif -->
+  <text x="256" y="320" text-anchor="middle"
+        font-family="Georgia, 'Times New Roman', serif"
+        font-style="italic" font-weight="500"
+        font-size="220" fill="url(#brass)">V<tspan font-size="120" dx="-10" dy="-10">21</tspan></text>
+</svg>

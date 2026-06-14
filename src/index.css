@@ -671,6 +671,12 @@ h3,
 .v21-felt-chip.denom-50  { background: radial-gradient(circle at 50% 38%, oklch(0.48 0.13 270) 0%, oklch(0.28 0.10 270) 70%); }
 .v21-felt-chip.denom-100 { background: radial-gradient(circle at 50% 38%, oklch(0.30 0.020 50) 0%, oklch(0.14 0.012 50) 70%); }
 
+/* PWA install prompt entry */
+@keyframes v21-install-in {
+  from { opacity: 0; transform: translate(-50%, 8px) scale(0.96); }
+  to   { opacity: 1; transform: translate(-50%, 0)   scale(1); }
+}
+
 /* Wager-locked readout (shown when bet controls collapse during play) */
 .v21-wager-locked {
   display: flex;

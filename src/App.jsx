@@ -8,6 +8,7 @@ import ActionPanel from "./components/ActionPanel";
 import HandZone from "./components/HandZone";
 const StatsModal = lazy(() => import("./components/StatsModal"));
 const TableScene3D = lazy(() => import("./components/TableScene3D"));
+const PWAInstallPrompt = lazy(() => import("./components/PWAInstallPrompt"));
 import { useTheme } from "./context/useTheme";
 import { useAchievements } from "./hooks/useAchievements";
 import { CHIP_VALUES, createDeck, DIFFICULTY_PRESETS, getStreakMultiplier, handValue, RESHUFFLE_THRESHOLD, resolveRound } from "./game/blackjack";
@@ -955,6 +956,10 @@ export default function App() {
           highestBankroll={state.highestBankroll}
           currentBankroll={state.bankroll}
         />
+      </Suspense>
+
+      <Suspense fallback={null}>
+        <PWAInstallPrompt />
       </Suspense>
     </div>
   );
