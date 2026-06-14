@@ -548,6 +548,45 @@ h3,
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
+   V21 Felt Parallax — subtle tilt toward cursor / device orientation
+   ───────────────────────────────────────────────────────────────────────────── */
+.v21-felt-tilt {
+  perspective: 1400px;
+  perspective-origin: 50% 45%;
+  transform: rotateX(var(--felt-tilt-x, 0deg)) rotateY(var(--felt-tilt-y, 0deg));
+  transform-style: preserve-3d;
+  transform-origin: 50% 50%;
+  transition: transform 80ms linear;
+  will-change: transform;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   V21 Card 3D Flip — real rotateY on the dealer's hole-card reveal
+   ───────────────────────────────────────────────────────────────────────────── */
+.v21-card-3d-outer {
+  perspective: 1000px;
+}
+.v21-card-3d-flipper {
+  will-change: transform;
+}
+.v21-card-3d-face {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  border-radius: 7px;
+}
+.v21-card-3d-back {
+  transform: rotateY(0deg);
+}
+.v21-card-3d-front {
+  /* Pre-rotated 180° so that when the flipper hits rotateY:180 the front faces the viewer */
+  transform: rotateY(180deg);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
    V21 Felt Chip Stack — physical chips on the betting circle
    ───────────────────────────────────────────────────────────────────────────── */
 .v21-felt-chips {
@@ -561,6 +600,7 @@ h3,
   align-items: flex-end;
   justify-content: center;
   gap: 6px;
+  perspective: 600px;
 }
 .v21-chip-pile {
   position: relative;
@@ -568,6 +608,8 @@ h3,
   flex-direction: column-reverse;
   align-items: center;
   min-width: 30px;
+  /* rotateX(58deg) is applied via framer-motion in App.jsx */
+  transform-style: preserve-3d;
 }
 /* Cast a soft elliptical shadow under each pile so chips rest on the felt */
 .v21-chip-pile::after {
@@ -585,9 +627,10 @@ h3,
 }
 .v21-chip-pile .count-tag {
   position: absolute;
-  top: -16px;
+  top: -22px;
   left: 50%;
-  transform: translateX(-50%);
+  /* Counter-rotate so the tag stays facing the viewer despite the pile's 58° tilt */
+  transform: translateX(-50%) rotateX(-58deg);
   font-size: 0.55rem;
   font-weight: 800;
   letter-spacing: 0.06em;

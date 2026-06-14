@@ -208,6 +208,8 @@ function CardFace({ card, hidden = false, reveal = false, index = 0 }) {
   const suitName = getSuitName(card.suit);
   const ariaLabel = `${card.rank} of ${suitName}`;
   const isFaceCard = card.rank === "J" || card.rank === "Q" || card.rank === "K";
+  // Showing the front of the card? — true unless we're in the "hidden, not yet revealed" state
+  const showingFront = !hidden || reveal;
 
   return (
     <MotionDiv
@@ -226,59 +228,55 @@ function CardFace({ card, hidden = false, reveal = false, index = 0 }) {
         scale: 0.94,
         transition: { duration: reduceMotion ? 0 : 0.07 },
       }}
-      className="relative shrink-0"
+      className="relative shrink-0 v21-card-3d-outer"
       style={{ width: "var(--card-w)", height: "var(--card-h)" }}
       role="img"
-      aria-label={hidden && !reveal ? "Face-down card" : ariaLabel}
+      aria-label={!showingFront ? "Face-down card" : ariaLabel}
     >
-      <AnimatePresence mode="wait" initial={false}>
-        {hidden && !reveal ? (
-          <MotionDiv
-            key="back"
-            initial={reduceMotion ? false : { scaleX: 0, opacity: 0 }}
-            animate={{ scaleX: 1, opacity: 1 }}
-            exit={reduceMotion ? { opacity: 0 } : { scaleX: 0, opacity: 0, transition: { duration: 0.07, ease: "easeIn" } }}
-            transition={{ duration: reduceMotion ? 0 : 0.12, ease: "easeOut" }}
-            style={{ position: "absolute", inset: 0 }}
-          >
-            <CardBack />
-          </MotionDiv>
-        ) : (
-          <MotionDiv
-            key="front"
-            initial={reduceMotion ? false : { scaleX: 0, opacity: 0 }}
-            animate={{ scaleX: 1, opacity: 1 }}
-            transition={{ duration: reduceMotion ? 0 : 0.09, ease: "easeOut" }}
-            className={`v21-card ${isRed ? "red" : ""}`}
-            style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}
-          >
-            {/* Top-left corner */}
-            <div className="v21-card-corner tl" style={{ fontSize: "var(--card-rank-size)" }}>
-              <span className="v21-mono" style={{ fontSize: "var(--card-rank-size)" }} aria-hidden="true">
-                {card.rank}
-              </span>
-              <SuitIcon suit={card.suit} style={{ width: "var(--card-pip-sm)", height: "var(--card-pip-sm)" }} />
-            </div>
+      {/* Real 3D flip — both faces always in DOM, parent rotates rotateY 0→180 */}
+      <MotionDiv
+        className="v21-card-3d-flipper"
+        animate={{ rotateY: showingFront ? 180 : 0 }}
+        transition={
+          reduceMotion
+            ? { duration: 0 }
+            : { type: "spring", stiffness: 220, damping: 22, mass: 0.55 }
+        }
+        style={{ position: "absolute", inset: 0, transformStyle: "preserve-3d", transformOrigin: "center" }}
+      >
+        {/* Back face — visible when rotateY < 90 */}
+        <div className="v21-card-3d-face v21-card-3d-back">
+          <CardBack />
+        </div>
 
-            {/* Centre — face cards get monogram, Ace gets ornamented centerpiece, 2-10 get traditional pip layouts */}
-            {isFaceCard ? (
-              <Monogram rank={card.rank} suit={card.suit} size="calc(var(--card-w) * 0.58)" />
-            ) : card.rank === "A" ? (
-              <AceCenterpiece suit={card.suit} size="calc(var(--card-w) * 0.50)" />
-            ) : (
-              <CardPips rank={Number(card.rank) || card.rank} suit={card.suit} />
-            )}
+        {/* Front face — pre-rotated 180° so it shows when parent reaches 180° */}
+        <div className={`v21-card-3d-face v21-card-3d-front v21-card ${isRed ? "red" : ""}`}>
+          {/* Top-left corner */}
+          <div className="v21-card-corner tl" style={{ fontSize: "var(--card-rank-size)" }}>
+            <span className="v21-mono" style={{ fontSize: "var(--card-rank-size)" }} aria-hidden="true">
+              {card.rank}
+            </span>
+            <SuitIcon suit={card.suit} style={{ width: "var(--card-pip-sm)", height: "var(--card-pip-sm)" }} />
+          </div>
 
-            {/* Bottom-right corner (rotated 180°) */}
-            <div className="v21-card-corner br" style={{ fontSize: "var(--card-rank-size)" }}>
-              <span className="v21-mono" style={{ fontSize: "var(--card-rank-size)" }} aria-hidden="true">
-                {card.rank}
-              </span>
-              <SuitIcon suit={card.suit} style={{ width: "var(--card-pip-sm)", height: "var(--card-pip-sm)" }} />
-            </div>
-          </MotionDiv>
-        )}
-      </AnimatePresence>
+          {/* Centre — face cards get monogram, Ace gets ornamented centerpiece, 2-10 get traditional pip layouts */}
+          {isFaceCard ? (
+            <Monogram rank={card.rank} suit={card.suit} size="calc(var(--card-w) * 0.58)" />
+          ) : card.rank === "A" ? (
+            <AceCenterpiece suit={card.suit} size="calc(var(--card-w) * 0.50)" />
+          ) : (
+            <CardPips rank={Number(card.rank) || card.rank} suit={card.suit} />
+          )}
+
+          {/* Bottom-right corner (rotated 180°) */}
+          <div className="v21-card-corner br" style={{ fontSize: "var(--card-rank-size)" }}>
+            <span className="v21-mono" style={{ fontSize: "var(--card-rank-size)" }} aria-hidden="true">
+              {card.rank}
+            </span>
+            <SuitIcon suit={card.suit} style={{ width: "var(--card-pip-sm)", height: "var(--card-pip-sm)" }} />
+          </div>
+        </div>
+      </MotionDiv>
     </MotionDiv>
   );
 }

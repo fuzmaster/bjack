@@ -56,10 +56,11 @@ function FeltChipStack({ amount }) {
             <motion.div
               key={denom}
               className="v21-chip-pile"
-              initial={{ opacity: 0, y: 6, scale: 0.92 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 6, scale: 0.92 }}
+              initial={{ opacity: 0, y: 6, scale: 0.92, rotateX: 58 }}
+              animate={{ opacity: 1, y: 0, scale: 1, rotateX: 58 }}
+              exit={{ opacity: 0, y: 6, scale: 0.92, rotateX: 58 }}
               transition={{ type: "spring", stiffness: 520, damping: 28, mass: 0.3 }}
+              style={{ transformOrigin: "50% 90%" }}
             >
               {count > MAX_VISIBLE_CHIPS && <span className="count-tag">×{count}</span>}
               {Array.from({ length: visible }, (_, i) => (
@@ -109,6 +110,55 @@ export default function App() {
   const achievementWinStreakRef = useRef(state.winStreak ?? 0);
   const bankrollAtDealRef = useRef(state.bankroll);
   const reduceMotion = useReducedMotion();
+  const feltRef = useRef(null);
+
+  // Cursor / gyroscope parallax — subtly tilts the felt toward viewer input
+  useEffect(() => {
+    if (reduceMotion) return;
+    const el = feltRef.current;
+    if (!el) return;
+
+    let raf = 0;
+    let targetX = 0, targetY = 0; // target rotation in degrees
+    let currentX = 0, currentY = 0;
+
+    const apply = () => {
+      // Lerp toward target for smoothness
+      currentX += (targetX - currentX) * 0.12;
+      currentY += (targetY - currentY) * 0.12;
+      el.style.setProperty("--felt-tilt-x", `${currentX.toFixed(2)}deg`);
+      el.style.setProperty("--felt-tilt-y", `${currentY.toFixed(2)}deg`);
+      raf = requestAnimationFrame(apply);
+    };
+
+    const onMouseMove = (e) => {
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      // Map cursor offset from center to ±2.2deg
+      const nx = (e.clientX / w - 0.5) * 2; // -1 .. 1
+      const ny = (e.clientY / h - 0.5) * 2;
+      targetY = nx * 2.2;   // rotateY: cursor right = felt tilts toward cursor
+      targetX = -ny * 1.8;  // rotateX: cursor up = felt tilts back (-)
+    };
+
+    const onOrient = (e) => {
+      // beta: front-back tilt (-180..180), gamma: left-right tilt (-90..90)
+      if (e.beta == null || e.gamma == null) return;
+      const beta = Math.max(-30, Math.min(30, e.beta - 45)); // assume ~45° hold
+      const gamma = Math.max(-30, Math.min(30, e.gamma));
+      targetX = (beta / 30) * 2.2;
+      targetY = (gamma / 30) * 2.5;
+    };
+
+    raf = requestAnimationFrame(apply);
+    window.addEventListener("mousemove", onMouseMove, { passive: true });
+    window.addEventListener("deviceorientation", onOrient, { passive: true });
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("deviceorientation", onOrient);
+    };
+  }, [reduceMotion]);
 
   const playerTotals = state.playerHands.map((hand) => handValue(hand));
   const activePlayerHand = useMemo(
@@ -760,7 +810,8 @@ export default function App() {
 
       {/* GAME TABLE — fills all remaining vertical space */}
       <main
-        className={`v21-felt relative z-0 flex min-h-0 flex-1 flex-col justify-between overflow-hidden${roundResult === "loss" && !reduceMotion ? " v21-table-breath" : ""}`}
+        ref={feltRef}
+        className={`v21-felt v21-felt-tilt relative z-0 flex min-h-0 flex-1 flex-col justify-between overflow-hidden${roundResult === "loss" && !reduceMotion ? " v21-table-breath" : ""}`}
         aria-label="Blackjack table"
       >
         {/* Table arc lines */}
