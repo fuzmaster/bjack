@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef } from "react";
+import { getCapabilities } from "../utils/capabilities";
 
 /**
  * Programmatic sound design via Web Audio API.
@@ -30,6 +31,8 @@ export function useGameAudio(isMuted = false) {
   const ensureCtx = useCallback(() => {
     if (ctxRef.current) return ctxRef.current;
     if (typeof window === "undefined") return null;
+    // Bail entirely in lite mode or when Web Audio is unsupported
+    if (!getCapabilities().webAudio) return null;
     const AC = window.AudioContext || window.webkitAudioContext;
     if (!AC) return null;
     try {

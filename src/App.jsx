@@ -16,9 +16,15 @@ import { createInitialGameState, gameReducer, initialGameState } from "./game/re
 import { useGameAudio } from "./hooks/useGameAudio";
 import { useSwipeGestures } from "./hooks/useSwipeGestures";
 
-const vibrate = (pattern) => { try { navigator?.vibrate?.(pattern); } catch {} };
+const vibrate = (pattern) => {
+  if (typeof navigator === "undefined" || typeof navigator.vibrate !== "function") return;
+  try { navigator.vibrate(pattern); } catch { /* ignore */ }
+};
 import { getStoredBankroll, setStoredBankroll, getStoredDifficulty, setStoredDifficulty, getStoredMuted, setStoredMuted, getStoredGameSpeed, setStoredGameSpeed, getStoredSessionStats, setStoredSessionStats } from "./utils/storage";
 import { formatCurrency } from "./utils/formatters";
+import { getCapabilities } from "./utils/capabilities";
+
+const CAPS = getCapabilities();
 
 const MotionDiv = motion.div;
 
@@ -816,10 +822,15 @@ export default function App() {
         className={`v21-felt v21-felt-tilt relative z-0 flex min-h-0 flex-1 flex-col justify-between overflow-hidden${roundResult === "loss" && !reduceMotion ? " v21-table-breath" : ""}`}
         aria-label="Blackjack table"
       >
-        {/* 3D table scene — WebGL felt with proper lighting + parallax camera */}
-        <Suspense fallback={null}>
-          <TableScene3D />
-        </Suspense>
+        {/* 3D table scene — WebGL felt with proper lighting + parallax camera.
+            Gated behind capability detection: skipped on browsers without WebGL
+            or when running in lite mode (?lite=1). The CSS felt gradient and
+            arc lines below still render so the table looks intentional. */}
+        {CAPS.webgl && (
+          <Suspense fallback={null}>
+            <TableScene3D />
+          </Suspense>
+        )}
 
         {/* Table arc lines — overlaid on top of the 3D felt at z-index 1 */}
         <svg className="v21-arcs" viewBox="0 0 600 380" preserveAspectRatio="none" aria-hidden="true" style={{ zIndex: 1 }}>
@@ -958,9 +969,28 @@ export default function App() {
         />
       </Suspense>
 
-      <Suspense fallback={null}>
-        <PWAInstallPrompt />
-      </Suspense>
+      {CAPS.serviceWorker && (
+        <Suspense fallback={null}>
+          <PWAInstallPrompt />
+        </Suspense>
+      )}
+
+      {/* Lite-mode badge — visible only when running stripped-down for testing */}
+      {CAPS.lite && (
+        <div
+          className="fixed left-2 top-2 z-50 rounded-md px-2 py-1 text-[0.6rem] font-bold uppercase tracking-[0.12em]"
+          style={{
+            background: "oklch(0.18 0.012 50 / 0.88)",
+            border: "1px solid oklch(0.82 0.10 78 / 0.32)",
+            color: "var(--brass-200, oklch(0.82 0.10 78))",
+            fontFamily: "var(--font-sans)",
+          }}
+          aria-label="Lite mode active"
+          title="Lite mode — 3D, audio, and install prompt disabled. Remove ?lite from the URL to restore."
+        >
+          Lite Mode
+        </div>
+      )}
     </div>
   );
 }
