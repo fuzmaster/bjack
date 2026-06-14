@@ -536,6 +536,73 @@ h3,
   to   { opacity: 1; transform: translate(-50%, -50%) scale(1); }
 }
 
+/* ─────────────────────────────────────────────────────────────────────────────
+   V21 Felt Chip Stack — physical chips on the betting circle
+   ───────────────────────────────────────────────────────────────────────────── */
+.v21-felt-chips {
+  position: absolute;
+  left: 50%;
+  top: 62%;
+  transform: translate(-50%, -50%);
+  z-index: 3;
+  pointer-events: none;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 6px;
+}
+.v21-chip-pile {
+  position: relative;
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
+  min-width: 30px;
+}
+.v21-chip-pile .count-tag {
+  position: absolute;
+  top: -16px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.55rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: var(--brass-100, oklch(0.92 0.06 78));
+  background: oklch(0.14 0.012 50 / 0.86);
+  padding: 1px 5px;
+  border-radius: 999px;
+  border: 0.5px solid oklch(0.82 0.10 78 / 0.30);
+  font-family: var(--font-sans);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.v21-felt-chip {
+  position: relative;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  margin-top: -24px;
+  border: 2px dashed oklch(1 0 0 / 0.55);
+  display: grid;
+  place-items: center;
+  font-family: var(--font-sans);
+  font-size: 0.62rem;
+  font-weight: 800;
+  color: oklch(1 0 0 / 0.92);
+  text-shadow: 0 1px 0 oklch(0 0 0 / 0.4);
+  box-shadow:
+    0 2px 4px oklch(0 0 0 / 0.45),
+    inset 0 1px 0 oklch(1 0 0 / 0.20),
+    inset 0 -2px 4px oklch(0 0 0 / 0.30);
+  font-variant-numeric: tabular-nums;
+}
+.v21-felt-chip:first-child { margin-top: 0; }
+
+/* Denomination colors — classic casino palette */
+.v21-felt-chip.denom-5   { background: radial-gradient(circle at 50% 38%, oklch(0.62 0.18 28) 0%, oklch(0.42 0.16 28) 70%); }
+.v21-felt-chip.denom-25  { background: radial-gradient(circle at 50% 38%, oklch(0.56 0.15 145) 0%, oklch(0.36 0.13 145) 70%); }
+.v21-felt-chip.denom-50  { background: radial-gradient(circle at 50% 38%, oklch(0.48 0.13 270) 0%, oklch(0.28 0.10 270) 70%); }
+.v21-felt-chip.denom-100 { background: radial-gradient(circle at 50% 38%, oklch(0.30 0.020 50) 0%, oklch(0.14 0.012 50) 70%); }
+
 /* Wager-locked readout (shown when bet controls collapse during play) */
 .v21-wager-locked {
   display: flex;

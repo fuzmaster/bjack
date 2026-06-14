@@ -1,5 +1,5 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
-import { motion, useReducedMotion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import confetti from "canvas-confetti";
 import { ChevronDown, ChevronUp, Settings as SettingsIcon, Flame, Volume2, VolumeX, Zap, TrendingUp, RefreshCcw } from "lucide-react";
 import TopBar from "./components/TopBar";
@@ -24,6 +24,55 @@ function splitRankValue(rank) {
   if (rank === "A") return 11;
   if (["10", "J", "Q", "K"].includes(rank)) return 10;
   return Number(rank);
+}
+
+// Greedy denomination decomposition: $130 → [{100,1}, {25,1}, {5,1}]
+const CHIP_DENOMS = [100, 50, 25, 5];
+function decomposeBet(amount) {
+  const stacks = [];
+  let remaining = amount;
+  for (const d of CHIP_DENOMS) {
+    const count = Math.floor(remaining / d);
+    if (count > 0) {
+      stacks.push({ denom: d, count });
+      remaining -= count * d;
+    }
+  }
+  return stacks;
+}
+
+// Visible chips per stack — show up to 5 stacked, then a "×N" count tag
+const MAX_VISIBLE_CHIPS = 5;
+
+function FeltChipStack({ amount }) {
+  const stacks = decomposeBet(amount);
+  if (stacks.length === 0 || amount <= 0) return null;
+  return (
+    <div className="v21-felt-chips" aria-label={`Wager $${amount} on the table`}>
+      <AnimatePresence>
+        {stacks.map(({ denom, count }) => {
+          const visible = Math.min(count, MAX_VISIBLE_CHIPS);
+          return (
+            <motion.div
+              key={denom}
+              className="v21-chip-pile"
+              initial={{ opacity: 0, y: 6, scale: 0.92 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 6, scale: 0.92 }}
+              transition={{ type: "spring", stiffness: 520, damping: 28, mass: 0.3 }}
+            >
+              {count > MAX_VISIBLE_CHIPS && <span className="count-tag">×{count}</span>}
+              {Array.from({ length: visible }, (_, i) => (
+                <div key={i} className={`v21-felt-chip denom-${denom}`}>
+                  {i === visible - 1 ? denom : ""}
+                </div>
+              ))}
+            </motion.div>
+          );
+        })}
+      </AnimatePresence>
+    </div>
+  );
 }
 
 export default function App() {
@@ -729,6 +778,15 @@ export default function App() {
             <div className="cue-text">Set your bet, then deal</div>
           </div>
         )}
+
+        {/* Physical chip stack on the betting circle */}
+        <FeltChipStack
+          amount={(() => {
+            if (state.gameState === "ready") return state.bet;
+            if (state.gameState === "round-over" && state.lastDelta < 0) return 0;
+            return state.handBets?.[state.activeHandIndex] ?? state.bet;
+          })()}
+        />
 
         {/* Result plaque — inline verdict + delta at round end */}
         {state.gameState === "round-over" && (
