@@ -6,6 +6,90 @@ import SuitIcon from "./SuitIcon";
 const MotionDiv = motion.div;
 
 /**
+ * Pip-layout grid for number cards 2–10.
+ * Traditional positions: pips are placed on a 3-col × 7-row grid (cells "a1"…"c7"),
+ * mirroring how real playing cards arrange suit symbols. Bottom-half pips rotate 180°.
+ */
+const PIP_LAYOUT = {
+  2:  [["b1"], ["b7"]],
+  3:  [["b1", "b4"], ["b7"]],
+  4:  [["a1", "c1"], ["a7", "c7"]],
+  5:  [["a1", "c1", "b4"], ["a7", "c7"]],
+  6:  [["a1", "c1", "a4", "c4"], ["a7", "c7"]],
+  7:  [["a1", "c1", "a4", "c4", "b2"], ["a7", "c7"]],
+  8:  [["a1", "c1", "a4", "c4", "b2"], ["a7", "c7", "b6"]],
+  9:  [["a1", "c1", "a3", "c3", "b4"], ["a5", "c5", "a7", "c7"]],
+  10: [["a1", "c1", "a3", "c3", "b2"], ["a5", "c5", "a7", "c7", "b6"]],
+};
+
+function CardPips({ rank, suit }) {
+  const layout = PIP_LAYOUT[rank];
+  if (!layout) return null;
+  const [top, bottom] = layout;
+  // Map cell IDs (e.g. "a1") to grid positions
+  // Columns: a=left, b=center, c=right (10%/50%/90%)
+  // Rows 1-7 map vertically from top (12%) to bottom (88%)
+  const cellToPos = (cell) => {
+    const col = cell[0]; // a|b|c
+    const row = parseInt(cell.slice(1), 10); // 1-7
+    const left = col === "a" ? "22%" : col === "c" ? "78%" : "50%";
+    const top = `${12 + ((row - 1) * 76) / 6}%`;
+    return { left, top };
+  };
+  return (
+    <div className="v21-card-pips" aria-hidden="true">
+      {top.map((cell) => {
+        const { left, top: t } = cellToPos(cell);
+        return (
+          <div key={`top-${cell}`} className="pip" style={{ left, top: t, transform: "translate(-50%, -50%)" }}>
+            <SuitIcon suit={suit} style={{ width: "100%", height: "100%" }} />
+          </div>
+        );
+      })}
+      {bottom.map((cell) => {
+        const { left, top: t } = cellToPos(cell);
+        return (
+          <div key={`bot-${cell}`} className="pip" style={{ left, top: t, transform: "translate(-50%, -50%) rotate(180deg)" }}>
+            <SuitIcon suit={suit} style={{ width: "100%", height: "100%" }} />
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+/**
+ * Ace centerpiece — oversized suit pip with brass ornamental frame.
+ */
+function AceCenterpiece({ suit, size }) {
+  return (
+    <div className="v21-card-center" aria-hidden="true">
+      <div style={{ position: "relative", width: size, height: size, display: "grid", placeItems: "center" }}>
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            border: "0.5px solid oklch(0.66 0.10 64 / 0.50)",
+            borderRadius: 6,
+            transform: "rotate(45deg)",
+          }}
+        />
+        <div
+          style={{
+            position: "absolute",
+            inset: "18%",
+            border: "0.5px solid oklch(0.66 0.10 64 / 0.28)",
+            borderRadius: 4,
+            transform: "rotate(45deg)",
+          }}
+        />
+        <SuitIcon suit={suit} style={{ width: "62%", height: "62%", position: "relative", zIndex: 1 }} />
+      </div>
+    </div>
+  );
+}
+
+/**
  * Monogram face card centre — serif italic letter in a rotated-square frame.
  * Mirrors the design canvas's Monogram component from rd-primitives.jsx.
  */
@@ -150,13 +234,13 @@ function CardFace({ card, hidden = false, reveal = false, index = 0 }) {
               <SuitIcon suit={card.suit} style={{ width: "var(--card-pip-sm)", height: "var(--card-pip-sm)" }} />
             </div>
 
-            {/* Centre — monogram for face cards, single pip for others */}
+            {/* Centre — face cards get monogram, Ace gets ornamented centerpiece, 2-10 get traditional pip layouts */}
             {isFaceCard ? (
               <Monogram rank={card.rank} suit={card.suit} size="calc(var(--card-w) * 0.58)" />
+            ) : card.rank === "A" ? (
+              <AceCenterpiece suit={card.suit} size="calc(var(--card-w) * 0.50)" />
             ) : (
-              <div className="v21-card-center" aria-hidden="true">
-                <SuitIcon suit={card.suit} style={{ width: "var(--card-pip-lg)", height: "var(--card-pip-lg)" }} />
-              </div>
+              <CardPips rank={Number(card.rank) || card.rank} suit={card.suit} />
             )}
 
             {/* Bottom-right corner (rotated 180°) */}

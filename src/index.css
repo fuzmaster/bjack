@@ -244,6 +244,22 @@ h3,
   z-index: 2;
 }
 
+/* Traditional pip layout — 2 through 10 */
+.v21-card-pips {
+  position: absolute;
+  inset: 14% 12%;
+  z-index: 2;
+  pointer-events: none;
+}
+.v21-card-pips .pip {
+  position: absolute;
+  width: clamp(8px, calc(var(--card-w) * 0.20), 18px);
+  height: clamp(8px, calc(var(--card-w) * 0.20), 18px);
+  display: grid;
+  place-items: center;
+  line-height: 0;
+}
+
 .v21-mono {
   font-family: var(--font-display);
   font-style: italic;
